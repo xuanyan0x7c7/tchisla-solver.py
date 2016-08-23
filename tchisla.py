@@ -1,4 +1,5 @@
 import math
+from fractions import Fraction
 from itertools import count, product
 from utils import sqrt, factorial
 
@@ -30,15 +31,16 @@ class Tchisla:
             return True
 
     def check(self, x, depth, method, op1, op2):
-        if x > MAX or x in self.solutions:
+        if abs(x.numerator) > MAX or x.denominator > MAX or x in self.solutions:
             return
         if self.insert(x, depth, method, op1, op2):
             return True
-        y = sqrt(x)
-        if y and self.check(y, depth, "sqrt", x, None):
+        y = sqrt(x.numerator)
+        z = sqrt(x.denominator)
+        if y and z and self.check(Fraction(y, z, False), depth, "sqrt", x, None):
             return True
-        if x <= MAX_FACTORIAL:
-            y = factorial(x)
+        if x.denominator == 1 and x <= MAX_FACTORIAL:
+            y = Fraction(factorial(int(x)))
             if self.check(y, depth, "factorial", x, None):
                 return True
 
@@ -53,21 +55,27 @@ class Tchisla:
                 return True
         if self.check(p * q, depth, "*", p, q):
             return True
-        if p % q == 0 and self.check(p // q, depth, "/", p, q):
+        if self.check(p / q, depth, "/", p, q):
             return True
-        if q % p == 0 and self.check(q // p, depth, "/", q, p):
+        if self.check(q / p, depth, "/", q, p):
             return True
-        if math.log2(p) * q <= MAX_DIGITS:
-            if self.check(p ** q, depth, "^", p, q):
+        if q.denominator == 1 and math.log2(p.numerator) * abs(q) <= MAX_DIGITS and math.log2(p.denominator) * abs(q) <= MAX_DIGITS:
+            x = p ** q
+            if self.check(x, depth, "^", p, q):
                 return True
-        if math.log2(q) * p <= MAX_DIGITS:
-            if self.check(q ** p, depth, "^", q, p):
+            if self.check(x ** -1, depth, "^", p, -q):
+                return True
+        if p.denominator == 1 and math.log2(q.numerator) * abs(p) <= MAX_DIGITS and math.log2(q.denominator) * abs(p) <= MAX_DIGITS:
+            x = q ** p
+            if self.check(x, depth, "^", q, p):
+                return True
+            if self.check(x ** -1, depth, "^", q, -p):
                 return True
 
     def search(self, depth = 1):
         self.visited.append([])
         if depth <= MAX_CONCAT:
-            m = (10 ** depth - 1) // 9 * self.n
+            m = Fraction((10 ** depth - 1) // 9 * self.n)
             if self.check(m, depth, "concat", None, None):
                 return True
         for d1 in range(1, (depth + 1) >> 1):
@@ -110,4 +118,4 @@ class Tchisla:
         else:
             self.printer(n, "binary")
             self.solution_found(op1)
-            self.solution_found(op2)
+            self.solution_found(abs(op2))
