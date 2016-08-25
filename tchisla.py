@@ -41,6 +41,15 @@ class Tchisla:
             if self.check(y, depth, ("factorial", x)):
                 return True
 
+    def quotient(self, p, q, depth):
+        if p < q:
+            p, q = q, p
+        quotient = p / q
+        if self.check(quotient, depth, ("/", p, q)):
+            return True
+        if self.check(quotient ** -1, depth, ("/", q, p)):
+            return True
+
     def exponent(self, p, q, depth):
         if q.denominator != 1 or p == 1:
             return
@@ -68,10 +77,7 @@ class Tchisla:
             return True
         if self.check(p * q, depth, ("*", p, q)):
             return True
-        quotient = p / q
-        if self.check(quotient, depth, ("/", p, q)):
-            return True
-        if self.check(quotient ** -1, depth, ("/", q, p)):
+        if self.quotient(p, q, depth):
             return True
         if self.exponent(p, q, depth):
             return True
