@@ -1,6 +1,6 @@
 import math
 from fractions import Fraction
-from itertools import count, product
+from itertools import count, product, chain, islice
 from functools import reduce
 from utils import sqrt, factorial
 
@@ -59,7 +59,7 @@ class Tchisla:
         if q.denominator == 1 and p != 1:
             p_digits = math.log2(max(p.numerator, p.denominator))
             q_int = q.numerator
-            exp = (("^", p, q), ("^", p, -q))
+            exp = (("^", p, q), ("^", p, ("-", q)))
             q2 = q
             while p_digits * q_int > MAX_DIGITS:
                 if q_int & 1 == 0:
@@ -114,21 +114,22 @@ class Tchisla:
             if self.search(depth):
                 return
 
-    def number_printer(self, n):
+    @staticmethod
+    def number_printer(n):
         if type(n) is tuple:
             if len(n) == 2:
                 if n[0] == "sqrt":
-                    return "sqrt(" + self.number_printer(n[1]) + ")"
+                    return "sqrt(" + Tchisla.number_printer(n[1]) + ")"
                 elif n[0] == "-":
-                    return "-" + self.number_printer(n[1])
+                    return "-" + Tchisla.number_printer(n[1])
             else:
-                return self.number_printer(n[1]) + n[0] + self.number_printer(n[2])
+                return Tchisla.number_printer(n[1]) + n[0] + Tchisla.number_printer(n[2])
         else:
             return str(n)
 
     def printer(self, n):
         if type(n) is tuple:
-            return self.number_printer(n)
+            return n
         else:
             depth, expression = self.solutions[n]
             string = str(depth) + ": " + str(n)
@@ -137,21 +138,22 @@ class Tchisla:
             elif len(expression) == 2:
                 method, operator = expression
                 if method == "sqrt":
-                    return string + " = sqrt(" + self.number_printer(operator) + ")"
+                    return string + " = sqrt(" + Tchisla.number_printer(operator) + ")"
                 elif method == "factorial":
-                    return string + " = " + str(operator) + "!"
+                    return string + " = " + Tchisla.number_printer(operator) + "!"
             else:
                 method, op1, op2 = expression
-                return string + " = " + self.number_printer(op1) + " " + method + " " + self.number_printer(op2)
+                return string + " = " + Tchisla.number_printer(op1) + " " + method + " " + Tchisla.number_printer(op2)
 
-    def number_dfs(self, expression):
+    @staticmethod
+    def number_dfs(expression):
         if type(expression) is tuple:
-            l = []
-            for operator in expression[1:]:
-                l += self.number_dfs(operator)
-            return l
+            return chain.from_iterable(map(
+                lambda operator: Tchisla.number_dfs(operator),
+                islice(expression, 1, None)
+            ))
         else:
-            return [expression]
+            return (expression,)
 
     def solution_found(self, n, force_print = False):
         if n in self.number_printed:
@@ -160,5 +162,5 @@ class Tchisla:
         if len(expression) > 1 or force_print:
             print(self.printer(n))
             self.number_printed.add(n)
-            for x in self.number_dfs(expression):
+            for x in Tchisla.number_dfs(expression):
                 self.solution_found(x)
