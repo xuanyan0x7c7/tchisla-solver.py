@@ -23,13 +23,13 @@ def sqrt(n):
         if x == int(x):
             return int(x)
         else:
-            return None
+            return
 
     if (n & 63 not in perfect_square_mask[64]) or (
         n % 11 not in perfect_square_mask[11]) or (
         n % 63 not in perfect_square_mask[63]) or (
         n % 65 not in perfect_square_mask[65]):
-        return None
+        return
 
     l = n.bit_length()
     if l & 1 and n & (n - 1) == 0:
@@ -41,7 +41,7 @@ def sqrt(n):
     if x ** 2 == n:
         return x
     else:
-        return None
+        return
 
 def factorial(n):
     result = 1
