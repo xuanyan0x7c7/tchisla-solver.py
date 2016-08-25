@@ -1,6 +1,6 @@
 import math
 from fractions import Fraction
-from itertools import count, product, chain, islice
+from itertools import count, product, combinations_with_replacement, chain, islice
 from functools import reduce
 from utils import sqrt, factorial
 
@@ -47,7 +47,6 @@ class Tchisla:
         p_digits = math.log2(max(p.numerator, p.denominator))
         q_int = q.numerator
         exp = (("^", p, q), ("^", p, ("-", q)))
-        q2 = q
         while p_digits * q_int > MAX_DIGITS:
             if q_int & 1 == 0:
                 q_int >>= 1
@@ -91,12 +90,9 @@ class Tchisla:
                 if self.binary(p, q, depth):
                     return True
         if depth & 1 == 0:
-            v = self.visited[depth >> 1]
-            length = len(v)
-            for i in range(length):
-                for j in range(i, length):
-                    if self.binary(v[i], v[j], depth):
-                        return True
+            for p, q in combinations_with_replacement(self.visited[depth >> 1], 2):
+                if self.binary(p, q, depth):
+                    return True
 
     def solve(self):
         for depth in count(1):
