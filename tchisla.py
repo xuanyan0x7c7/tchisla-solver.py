@@ -1,7 +1,6 @@
 import math
 from fractions import Fraction
 from itertools import count, product, combinations_with_replacement, chain, islice
-from functools import reduce
 from expression import Expression
 from utils import sqrt, factorial
 
@@ -17,6 +16,8 @@ class SolutionFoundError(Exception):
         self.message = message
 
 class Tchisla:
+    __slots__ = ("n", "target", "solutions", "visited", "number_printed")
+
     def __init__(self, n, target):
         self.n = n
         self.target = target
