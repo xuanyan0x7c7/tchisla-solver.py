@@ -23,9 +23,7 @@ class Tchisla:
     def insert(self, x, depth, expression):
         self.solutions[x] = depth, expression
         self.visited[depth].append(x)
-        if x == self.target:
-            self.solution_found(self.target, True)
-            return True
+        return x == self.target
 
     def check(self, x, depth, expression):
         if x.numerator > MAX or x.denominator > MAX or x in self.solutions:
@@ -121,7 +119,7 @@ class Tchisla:
         else:
             return (expression,)
 
-    def solution_found(self, n, force_print = False):
+    def print_solution(self, n, force_print = False):
         if n in self.number_printed:
             return
         depth, expression = self.solutions[n]
@@ -129,4 +127,4 @@ class Tchisla:
             print(self.printer(n))
             self.number_printed.add(n)
             for x in Tchisla.number_dfs(expression):
-                self.solution_found(x)
+                self.print_solution(x)

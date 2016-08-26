@@ -15,11 +15,15 @@ def solve(string):
         target = int(string)
         for n in range(1, 10):
             problem_printer(n, target)
-            Tchisla(n, target).solve()
+            tchisla = Tchisla(n, target)
+            tchisla.solve()
+            tchisla.print_solution(target, True)
     elif tchisla_re.match(string):
         target, n = tuple(map(int, string.split("#")))
         problem_printer(n, target)
-        Tchisla(n, target).solve()
+        tchisla = Tchisla(n, target)
+        tchisla.solve()
+        tchisla.print_solution(target, True)
 
 if __name__ == "__main__":
     for string in sys.argv[1:]:
