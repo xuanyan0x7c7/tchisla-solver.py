@@ -12,6 +12,10 @@ MAX_DIGITS = 128
 MAX_CONCAT = 39
 MAX_FACTORIAL = 34
 
+class SolutionFoundError(Exception):
+    def __init__(self, message):
+        self.message = message
+
 class Tchisla:
     def __init__(self, n, target):
         self.n = n
@@ -23,31 +27,28 @@ class Tchisla:
     def insert(self, x, depth, expression):
         self.solutions[x] = depth, expression
         self.visited[depth].append(x)
-        return x == self.target
+        if x == self.target:
+            raise SolutionFoundError(str(self.target) + "#" + str(self.n))
 
     def check(self, x, depth, expression):
         if x.numerator > MAX or x.denominator > MAX or x in self.solutions:
             return
-        if self.insert(x, depth, expression):
-            return True
+        self.insert(x, depth, expression)
         z = sqrt(x.denominator)
         if z is not None:
             y = sqrt(x.numerator)
-            if y is not None and self.check(Fraction(y, z, False), depth, Expression("sqrt", x)):
-                return True
+            if y is not None:
+                self.check(Fraction(y, z, False), depth, Expression("sqrt", x))
         if x.denominator == 1 and x <= MAX_FACTORIAL:
             y = Fraction(factorial(int(x)))
-            if self.check(y, depth, Expression("factorial", x)):
-                return True
+            self.check(y, depth, Expression("factorial", x))
 
     def quotient(self, p, q, depth):
         if p < q:
             p, q = q, p
         quotient = p / q
-        if self.check(quotient, depth, Expression("/", p, q)):
-            return True
-        if self.check(quotient ** -1, depth, Expression("/", q, p)):
-            return True
+        self.check(quotient, depth, Expression("/", p, q))
+        self.check(quotient ** -1, depth, Expression("/", q, p))
 
     def exponent(self, p, q, depth):
         if q.denominator != 1 or p == 1:
@@ -62,47 +63,39 @@ class Tchisla:
             else:
                 return
         x = p ** q_int
-        if self.check(x, depth, exp[0]):
-            return True
-        if self.check(x ** -1, depth, exp[1]):
-            return True
+        self.check(x, depth, exp[0])
+        self.check(x ** -1, depth, exp[1])
 
     def binary(self, p, q, depth):
-        if self.check(p + q, depth, Expression("+", p, q)):
-            return True
-        if p > q and self.check(p - q, depth, Expression("-", p, q)):
-            return True
-        elif p < q and self.check(q - p, depth, Expression("-", q, p)):
-            return True
-        if self.check(p * q, depth, Expression("*", p, q)):
-            return True
-        if self.quotient(p, q, depth):
-            return True
-        if self.exponent(p, q, depth):
-            return True
-        if self.exponent(q, p, depth):
-            return True
+        self.check(p + q, depth, Expression("+", p, q))
+        if p > q:
+            self.check(p - q, depth, Expression("-", p, q))
+        elif p < q:
+            self.check(q - p, depth, Expression("-", q, p))
+        self.check(p * q, depth, Expression("*", p, q))
+        self.quotient(p, q, depth)
+        self.exponent(p, q, depth)
+        self.exponent(q, p, depth)
 
     def search(self, depth):
         self.visited.append([])
         if depth <= MAX_CONCAT:
             m = Fraction((10 ** depth - 1) // 9 * self.n)
-            if self.check(m, depth, Expression()):
-                return True
+            self.check(m, depth, Expression())
         for d1 in range(1, (depth + 1) >> 1):
             d2 = depth - d1
             for p, q in product(self.visited[d1], self.visited[d2]):
-                if self.binary(p, q, depth):
-                    return True
+                self.binary(p, q, depth)
         if depth & 1 == 0:
             for p, q in combinations_with_replacement(self.visited[depth >> 1], 2):
-                if self.binary(p, q, depth):
-                    return True
+                self.binary(p, q, depth)
 
     def solve(self):
-        for depth in count(1):
-            if self.search(depth):
-                return
+        try:
+            for depth in count(1):
+                self.search(depth)
+        except SolutionFoundError:
+            pass
 
     def printer(self, n):
         depth, expression = self.solutions[n]
