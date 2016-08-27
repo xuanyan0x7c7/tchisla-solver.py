@@ -3,7 +3,7 @@
 import sys
 import re
 from fractions import Fraction
-from tchisla import Tchisla
+from solver.base import Tchisla
 
 number_re = re.compile("^\\d+(/\\d+)?$")
 tchisla_re = re.compile("^\\d+(/\\d+)?#\\d$")
