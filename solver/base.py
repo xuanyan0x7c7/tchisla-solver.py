@@ -14,7 +14,7 @@ class BaseTchisla:
 
     def __init__(self, n, target):
         self.n = n
-        self.target = target
+        self.target = self.constructor(target)
         self.solutions = {}
         self.visited = [[]]
         self.number_printed = set()
@@ -91,12 +91,14 @@ class BaseTchisla:
             for p, q in combinations_with_replacement(self.visited[depth >> 1], 2):
                 self.binary(p, q, depth)
 
-    def solve(self):
-        try:
-            for depth in count(1):
+    def solve(self, max_depth = None):
+        for depth in count(1):
+            if depth == max_depth:
+                return None
+            try:
                 self.search(depth)
-        except SolutionFoundError:
-            pass
+            except SolutionFoundError:
+                return depth
 
     def printer(self, n):
         depth, expression = self.solutions[n]
@@ -113,12 +115,14 @@ class BaseTchisla:
         else:
             return (expression,)
 
-    def print_solution(self, n, force_print = False):
-        if n in self.number_printed:
-            return
+    def solution_prettyprint(self, n, force_print = False):
+        if n in self.number_printed or n not in self.solutions:
+            return []
         depth, expression = self.solutions[n]
-        if expression.name is not None or force_print:
-            print(self.printer(n))
-            self.number_printed.add(n)
-            for x in BaseTchisla.number_dfs(expression):
-                self.print_solution(x)
+        if expression.name is None and not force_print:
+            return []
+        solution_list = [self.printer(n)]
+        self.number_printed.add(n)
+        for x in BaseTchisla.number_dfs(expression):
+            solution_list += self.solution_prettyprint(x)
+        return solution_list

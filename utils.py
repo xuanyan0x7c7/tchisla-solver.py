@@ -20,7 +20,7 @@ MAX_SAFE_INTEGER = 1 << 53
 def sqrt(n):
     if n <= MAX_SAFE_INTEGER:
         x = math.sqrt(n)
-        if x == int(x):
+        if int(x) ** 2 == n:
             return int(x)
         else:
             return

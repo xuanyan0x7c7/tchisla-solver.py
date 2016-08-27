@@ -8,10 +8,10 @@ __all__ = ["RationalTchisla"]
 
 class RationalTchisla(BaseTchisla):
     constructor = Fraction
-    MAX = 1 << 128
-    MAX_DIGITS = 128
-    MAX_CONCAT = 39
-    MAX_FACTORIAL = 34
+    MAX = 1 << 64
+    MAX_DIGITS = 64
+    MAX_CONCAT = 20
+    MAX_FACTORIAL = 20
 
     def __init__(self, n, target):
         super().__init__(n, target)
