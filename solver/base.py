@@ -1,21 +1,15 @@
-import math
 from fractions import Fraction
-from itertools import count, product, combinations_with_replacement, chain, islice
+from itertools import count, product, combinations_with_replacement, chain
 from expression import Expression
 from utils import sqrt, factorial
 
-__all__ = ["Tchisla"]
-
-MAX = 1 << 128
-MAX_DIGITS = 128
-MAX_CONCAT = 39
-MAX_FACTORIAL = 34
+__all__ = ["BaseTchisla"]
 
 class SolutionFoundError(Exception):
     def __init__(self, message):
         self.message = message
 
-class Tchisla:
+class BaseTchisla:
     __slots__ = ("n", "target", "solutions", "visited", "number_printed")
 
     def __init__(self, n, target):
@@ -31,20 +25,35 @@ class Tchisla:
         if x == self.target:
             raise SolutionFoundError(str(self.target) + "#" + str(self.n))
 
+    def range_check(self, x):
+        raise NotImplementedError
+
     def check(self, x, depth, expression):
-        if x.numerator > MAX or x.denominator > MAX or x in self.solutions:
+        if not self.range_check(x) or x in self.solutions:
             return
         self.insert(x, depth, expression)
-        z = sqrt(x.denominator)
-        if z is not None:
-            y = sqrt(x.numerator)
-            if y is not None:
-                self.check(Fraction(y, z, False), depth, Expression("sqrt", x))
-        if x.denominator == 1 and x <= MAX_FACTORIAL:
-            y = Fraction(factorial(int(x)))
-            self.check(y, depth, Expression("factorial", x))
+        self.sqrt(x, depth)
+        self.factorial(x, depth)
 
-    def quotient(self, p, q, depth):
+    def concat(self, depth):
+        if depth <= self.MAX_CONCAT:
+            x = self.constructor((10 ** depth - 1) // 9 * self.n)
+            self.check(x, depth, Expression())
+
+    def add(self, p, q, depth):
+        self.check(p + q, depth, Expression("+", p, q))
+
+    def subtract(self, p, q, depth):
+        if p == q:
+            return
+        elif p < q:
+            p, q = q, p
+        self.check(p - q, depth, Expression("-", p, q))
+
+    def multiply(self, p, q, depth):
+        self.check(p * q, depth, Expression("*", p, q))
+
+    def divide(self, p, q, depth):
         if p < q:
             p, q = q, p
         quotient = p / q
@@ -52,37 +61,28 @@ class Tchisla:
         self.check(quotient ** -1, depth, Expression("/", q, p))
 
     def exponent(self, p, q, depth):
-        if q.denominator != 1 or p == 1:
-            return
-        p_digits = math.log2(max(p.numerator, p.denominator))
-        q_int = q.numerator
-        exp = (Expression("^", p, q), Expression("^", p, Expression("-", q)))
-        while p_digits * q_int > MAX_DIGITS:
-            if q_int & 1 == 0:
-                q_int >>= 1
-                exp = (Expression("sqrt", exp[0]), Expression("sqrt", exp[1]))
-            else:
-                return
-        x = p ** q_int
-        self.check(x, depth, exp[0])
-        self.check(x ** -1, depth, exp[1])
+        raise NotImplementedError
+
+    def sqrt(self, x, depth):
+        raise NotImplementedError
+
+    def factorial(self, x, depth):
+        if x <= self.MAX_FACTORIAL:
+            y = self.constructor(factorial(int(x)))
+            self.check(y, depth, Expression("factorial", x))
 
     def binary(self, p, q, depth):
-        self.check(p + q, depth, Expression("+", p, q))
-        if p > q:
-            self.check(p - q, depth, Expression("-", p, q))
-        elif p < q:
-            self.check(q - p, depth, Expression("-", q, p))
-        self.check(p * q, depth, Expression("*", p, q))
-        self.quotient(p, q, depth)
+        self.add(p, q, depth)
+        self.subtract(p, q, depth)
+        self.multiply(p, q, depth)
+        self.divide(p, q, depth)
         self.exponent(p, q, depth)
         self.exponent(q, p, depth)
 
     def search(self, depth):
-        self.visited.append([])
-        if depth <= MAX_CONCAT:
-            m = Fraction((10 ** depth - 1) // 9 * self.n)
-            self.check(m, depth, Expression())
+        if depth not in self.visited:
+            self.visited.append([])
+        self.concat(depth)
         for d1 in range(1, (depth + 1) >> 1):
             d2 = depth - d1
             for p, q in product(self.visited[d1], self.visited[d2]):
@@ -109,7 +109,7 @@ class Tchisla:
     @staticmethod
     def number_dfs(expression):
         if type(expression) is Expression:
-            return chain.from_iterable(map(Tchisla.number_dfs, expression.args))
+            return chain.from_iterable(map(BaseTchisla.number_dfs, expression.args))
         else:
             return (expression,)
 
@@ -120,5 +120,5 @@ class Tchisla:
         if expression.name is not None or force_print:
             print(self.printer(n))
             self.number_printed.add(n)
-            for x in Tchisla.number_dfs(expression):
+            for x in BaseTchisla.number_dfs(expression):
                 self.print_solution(x)
