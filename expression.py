@@ -8,7 +8,7 @@ class Expression:
         self.args = tuple(args)
 
     def __str__(self):
-        if self.args == ():
+        if not self.args:
             return ""
         elif len(self.args) == 1:
             arg = str(self.args[0])
