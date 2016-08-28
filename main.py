@@ -41,13 +41,17 @@ def incremental_solver(n, target):
         tchisla = IntegerTchisla(n, integer_target)
         max_depth = tchisla.solve()
         solution_list = tchisla.solution_prettyprint(integer_target, True)
+        for string in solution_list:
+            print(string)
     tchisla = RationalTchisla(n, target)
-    tchisla.solve(max_depth)
+    max_depth = tchisla.solve(max_depth)
     rational_solution_list = tchisla.solution_prettyprint(target, True)
-    if len(rational_solution_list) > 0:
+    if rational_solution_list:
+        if solution_list:
+            print("=" * 20)
         solution_list = rational_solution_list
-    for string in solution_list:
-        print(string)
+        for string in solution_list:
+            print(string)
 
 def general_solver(n, target, solver_type):
     solver_map = {
