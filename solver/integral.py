@@ -3,14 +3,14 @@ from expression import Expression
 from utils import sqrt
 from solver.base import BaseTchisla
 
-__all__ = ["IntegerTchisla"]
+__all__ = ["IntegralTchisla"]
 
 MAX = 1 << 128
 MAX_DIGITS = 128
 MAX_CONCAT = 39
 MAX_FACTORIAL = 34
 
-class IntegerTchisla(BaseTchisla):
+class IntegralTchisla(BaseTchisla):
     constructor = int
     MAX = 1 << 128
     MAX_DIGITS = 128
