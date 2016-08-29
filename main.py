@@ -6,7 +6,7 @@ from fractions import Fraction
 from solver.integer import IntegerTchisla
 from solver.rational import RationalTchisla
 
-integer_re = re.compile("^\\d+")
+integer_re = re.compile("^\\d+$")
 rational_re = re.compile("^\\d+(/\\d+)?$")
 number_re = rational_re
 
@@ -47,12 +47,13 @@ def general_solver(n, target, solver_type):
 def solve(string, solver_type):
     if "#" in string:
         array = string.split("#")
-        target = array[0]
-        n = array[1]
-        if integer_re.match(n) and number_re.match(target):
-            n = int(n)
-            print(str(target) + " # " + str(n))
-            general_solver(n, target, solver_type)
+        if len(array) == 2:
+            target = array[0]
+            n = array[1]
+            if integer_re.match(n) and number_re.match(target):
+                n = int(n)
+                print(str(target) + " # " + str(n))
+                general_solver(n, target, solver_type)
     elif number_re.match(string):
         for n in range(1, 10):
             print(str(string) + " # " + str(n))
