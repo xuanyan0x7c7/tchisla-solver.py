@@ -71,7 +71,7 @@ class BaseTchisla:
             y = self.constructor(factorial(int(x)))
             self.check(y, depth, Expression("factorial", x))
 
-    def binary(self, p, q, depth):
+    def binary_operation(self, p, q, depth):
         self.add(p, q, depth)
         self.subtract(p, q, depth)
         self.multiply(p, q, depth)
@@ -86,10 +86,10 @@ class BaseTchisla:
         for d1 in range(1, (depth + 1) >> 1):
             d2 = depth - d1
             for p, q in product(self.visited[d1], self.visited[d2]):
-                self.binary(p, q, depth)
+                self.binary_operation(p, q, depth)
         if depth & 1 == 0:
             for p, q in combinations_with_replacement(self.visited[depth >> 1], 2):
-                self.binary(p, q, depth)
+                self.binary_operation(p, q, depth)
 
     def solve(self, max_depth = None):
         for depth in count(1):
@@ -109,9 +109,9 @@ class BaseTchisla:
             return string + " = " + str(expression)
 
     @staticmethod
-    def number_dfs(expression):
+    def requirements(expression):
         if type(expression) is Expression:
-            return chain.from_iterable(map(BaseTchisla.number_dfs, expression.args))
+            return chain.from_iterable(map(BaseTchisla.requirements, expression.args))
         else:
             return (expression,)
 
@@ -123,6 +123,6 @@ class BaseTchisla:
             return []
         solution_list = [self.printer(n)]
         self.number_printed.add(n)
-        for x in BaseTchisla.number_dfs(expression):
+        for x in BaseTchisla.requirements(expression):
             solution_list += self.solution_prettyprint(x)
         return solution_list
