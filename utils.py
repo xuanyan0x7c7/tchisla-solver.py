@@ -10,25 +10,24 @@ perfect_square_mask = {
 }
 
 for n in perfect_square_mask:
-    perfect_square_mask[n] = set(map(
-        lambda p: p[0],
-        filter(lambda p: p[1] == "1", enumerate(perfect_square_mask[n]))
-    ))
+    perfect_square_mask[n] = tuple(x == "1" for x in perfect_square_mask[n])
 
 MAX_SAFE_INTEGER = 1 << 53
 
 def sqrt(n):
     if n <= MAX_SAFE_INTEGER:
-        x = math.sqrt(n)
-        if int(x) ** 2 == n:
-            return int(x)
+        x = int(math.sqrt(n))
+        if x ** 2 == n:
+            return x
         else:
             return
 
-    if (n & 63 not in perfect_square_mask[64]) or (
-        n % 11 not in perfect_square_mask[11]) or (
-        n % 63 not in perfect_square_mask[63]) or (
-        n % 65 not in perfect_square_mask[65]):
+    if not perfect_square_mask[64][n & 63]:
+        return
+    m = n % 45045
+    if (not perfect_square_mask[11][m % 11]) or (
+        not perfect_square_mask[63][m % 63]) or (
+        not perfect_square_mask[65][m % 65]):
         return
 
     l = n.bit_length()
