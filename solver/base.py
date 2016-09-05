@@ -1,5 +1,5 @@
-from fractions import Fraction
 from itertools import count, product, combinations_with_replacement, chain
+from gmpy2 import mpq as Fraction
 from expression import Expression
 from utils import sqrt, factorial
 

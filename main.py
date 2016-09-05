@@ -2,7 +2,7 @@
 
 import sys
 import re
-from fractions import Fraction
+from gmpy2 import mpq as Fraction
 from solver.integral import IntegralTchisla
 from solver.rational import RationalTchisla
 
