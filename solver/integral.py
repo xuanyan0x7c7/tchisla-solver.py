@@ -1,14 +1,9 @@
 import math
+from gmpy2 import is_square, isqrt
 from expression import Expression
-from utils import sqrt
 from solver.base import BaseTchisla
 
 __all__ = ["IntegralTchisla"]
-
-MAX = 1 << 128
-MAX_DIGITS = 128
-MAX_CONCAT = 39
-MAX_FACTORIAL = 34
 
 class IntegralTchisla(BaseTchisla):
     constructor = int
@@ -43,6 +38,6 @@ class IntegralTchisla(BaseTchisla):
         self.check(p ** q, depth, exp)
 
     def sqrt(self, x, depth):
-        y = sqrt(x)
-        if y is not None:
+        if is_square(x):
+            y = int(isqrt(x))
             self.check(y, depth, Expression("sqrt", x))
