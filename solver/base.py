@@ -1,7 +1,6 @@
 from itertools import count, product, combinations_with_replacement, chain
-from gmpy2 import mpq as Fraction
+from gmpy2 import mpq as Fraction, fac as factorial
 from expression import Expression
-from utils import sqrt, factorial
 
 __all__ = ["BaseTchisla"]
 

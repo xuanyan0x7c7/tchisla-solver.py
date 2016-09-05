@@ -1,7 +1,6 @@
 import math
-from gmpy2 import mpq as Fraction
+from gmpy2 import mpq as Fraction, is_square, isqrt
 from expression import Expression
-from utils import sqrt
 from solver.base import BaseTchisla
 
 __all__ = ["RationalTchisla"]
@@ -36,8 +35,7 @@ class RationalTchisla(BaseTchisla):
         self.check(x ** -1, depth, exp[1])
 
     def sqrt(self, x, depth):
-        z = sqrt(x.denominator)
-        if z is not None:
-            y = sqrt(x.numerator)
-            if y is not None:
-                self.check(Fraction(y, z), depth, Expression("sqrt", x))
+        if is_square(x.numerator) and is_square(x.denominator):
+            y = isqrt(x.numerator)
+            z = isqrt(x.denominator)
+            self.check(Fraction(y, z), depth, Expression("sqrt", x))
