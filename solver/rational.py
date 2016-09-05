@@ -1,5 +1,5 @@
 import math
-from fractions import Fraction
+from gmpy2 import mpq as Fraction
 from expression import Expression
 from utils import sqrt
 from solver.base import BaseTchisla
@@ -40,4 +40,4 @@ class RationalTchisla(BaseTchisla):
         if z is not None:
             y = sqrt(x.numerator)
             if y is not None:
-                self.check(Fraction(y, z, False), depth, Expression("sqrt", x))
+                self.check(Fraction(y, z), depth, Expression("sqrt", x))
