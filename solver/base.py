@@ -1,4 +1,5 @@
 from itertools import count, product, combinations_with_replacement, chain
+from abc import ABCMeta, abstractmethod
 from gmpy2 import mpq as Fraction, fac as factorial
 from expression import Expression
 
@@ -9,6 +10,7 @@ class SolutionFoundError(Exception):
         self.message = message
 
 class BaseTchisla:
+    __metaclass__ = ABCMeta
     __slots__ = ("n", "target", "solutions", "visited", "number_printed")
 
     def __init__(self, n, target):
@@ -24,8 +26,9 @@ class BaseTchisla:
         if x == self.target:
             raise SolutionFoundError(str(self.target) + "#" + str(self.n))
 
+    @abstractmethod
     def range_check(self, x):
-        raise NotImplementedError
+        pass
 
     def check(self, x, depth, expression):
         if not self.range_check(x) or x in self.solutions:
@@ -59,11 +62,13 @@ class BaseTchisla:
         self.check(quotient, depth, Expression("/", p, q))
         self.check(quotient ** -1, depth, Expression("/", q, p))
 
+    @abstractmethod
     def exponent(self, p, q, depth):
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def sqrt(self, x, depth):
-        raise NotImplementedError
+        pass
 
     def factorial(self, x, depth):
         if x <= self.MAX_FACTORIAL:
