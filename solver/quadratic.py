@@ -21,7 +21,7 @@ class QuadraticTchisla(BaseTchisla):
         return x.numerator <= self.MAX and x.denominator <= self.MAX
 
     def integer_check(self, x):
-        return x.quadratic_part is None and x.rational_part.denominator == 1
+        return x.quadratic_power == 0 and x.rational_part.denominator == 1
 
     def add(self, p, q, depth):
         result = p + q
@@ -49,7 +49,6 @@ class QuadraticTchisla(BaseTchisla):
         self.check(quotient ** -1, depth, Expression("/", q, p))
 
     def exponent(self, p, q, depth):
-        r = p.rational_part
         if not self.integer_check(q) or p == 1:
             return
         q_max = q.rational_part.numerator
@@ -59,18 +58,19 @@ class QuadraticTchisla(BaseTchisla):
             q_min >>= 1
             exp = (Expression("sqrt", exp[0]), Expression("sqrt", exp[1]))
         q = q_min
+        x = p ** q
         while q <= q_max:
-            x = p ** q
             if not self.range_check(x):
                 break
             self.check(x, depth, exp[0], need_sqrt = q == q_min)
             self.check(x ** -1, depth, exp[1], need_sqrt = q == q_min)
             q <<= 1
+            x **= 2
             if type(exp[0]) is Expression:
                 exp = exp[0].args[0], exp[1].args[0]
 
     def sqrt(self, x, depth):
-        if x.quadratic_part is None or x.quadratic_part[0] < 3:
+        if x.quadratic_power < 3:
             y = Quadratic.sqrt(x)
             if y is not None:
                 self.check(y, depth, Expression("sqrt", x))
