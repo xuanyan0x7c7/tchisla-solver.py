@@ -30,12 +30,18 @@ class BaseTchisla:
     def range_check(self, x):
         pass
 
-    def check(self, x, depth, expression):
+    @abstractmethod
+    def integer_check(self, x):
+        pass
+
+    def check(self, x, depth, expression, need_sqrt = True):
         if not self.range_check(x) or x in self.solutions:
             return
         self.insert(x, depth, expression)
-        self.sqrt(x, depth)
-        self.factorial(x, depth)
+        if need_sqrt:
+            self.sqrt(x, depth)
+        if self.integer_check(x):
+            self.factorial(x, depth)
 
     def concat(self, depth):
         if depth <= self.MAX_CONCAT:
@@ -75,7 +81,7 @@ class BaseTchisla:
         pass
 
     def factorial(self, x, depth):
-        if x <= self.MAX_FACTORIAL:
+        if int(x) <= self.MAX_FACTORIAL:
             y = self.constructor(factorial(int(x)))
             self.check(y, depth, Expression("factorial", x))
 
@@ -102,7 +108,7 @@ class BaseTchisla:
     def solve(self, max_depth = None):
         for depth in count(1):
             if depth == max_depth:
-                return None
+                return
             try:
                 self.search(depth)
             except SolutionFoundError:

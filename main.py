@@ -1,10 +1,12 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import sys
 import re
 from gmpy2 import mpq as Fraction
+from quadratic import Quadratic
 from solver.integral import IntegralTchisla
 from solver.rational import RationalTchisla
+from solver.quadratic import QuadraticTchisla
 
 integral_re = re.compile("^\\d+$")
 rational_re = re.compile("^\\d+(/\\d+)?$")
@@ -17,9 +19,13 @@ solvers = {
     "rational": [
         {"regex": rational_re, "constructor": Fraction, "solver": RationalTchisla}
     ],
+    "quadratic": [
+        {"regex": rational_re, "constructor": Quadratic, "solver": QuadraticTchisla}
+    ],
     "incremental": [
         {"regex": integral_re, "constructor": int, "solver": IntegralTchisla},
-        {"regex": rational_re, "constructor": Fraction, "solver": RationalTchisla}
+        {"regex": rational_re, "constructor": Fraction, "solver": RationalTchisla},
+        {"regex": rational_re, "constructor": Quadratic, "solver": QuadraticTchisla}
     ]
 }
 

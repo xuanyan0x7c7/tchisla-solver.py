@@ -16,7 +16,10 @@ class RationalTchisla(BaseTchisla):
         super().__init__(n, target)
 
     def range_check(self, x):
-        return x.numerator <= self.MAX or x.denominator <= self.MAX
+        return x.numerator <= self.MAX and x.denominator <= self.MAX
+
+    def integer_check(self, x):
+        return x.denominator == 1
 
     def exponent(self, p, q, depth):
         if q.denominator != 1 or p == 1:
