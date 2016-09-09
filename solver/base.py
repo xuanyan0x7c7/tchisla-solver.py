@@ -122,14 +122,13 @@ class BaseTchisla:
         else:
             return string + " = " + str(expression)
 
-    @staticmethod
-    def requirements(expression):
-        if type(expression) is Expression:
-            return chain.from_iterable(map(BaseTchisla.requirements, expression.args))
-        else:
-            return (expression,)
-
     def solution_prettyprint(self, n, force_print = False):
+        def requirements(expression):
+            if type(expression) is Expression:
+                return chain.from_iterable(map(requirements, expression.args))
+            else:
+                return (expression,)
+
         if n in self.number_printed or n not in self.solutions:
             return []
         depth, expression = self.solutions[n]
@@ -137,6 +136,6 @@ class BaseTchisla:
             return []
         solution_list = [self.printer(n)]
         self.number_printed.add(n)
-        for x in BaseTchisla.requirements(expression):
+        for x in requirements(expression):
             solution_list += self.solution_prettyprint(x)
         return solution_list
