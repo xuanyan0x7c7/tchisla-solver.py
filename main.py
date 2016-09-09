@@ -31,13 +31,14 @@ solvers = {
 def general_solver(n, target, options):
     max_depth = options.max_depth
     solver_type = options.solver
+    verbose = options.verbose
     depth = max_depth and max_depth + 1
     solution = None
     for solver in solvers[solver_type]:
         if not solver["regex"].match(target):
             continue
         current_target = solver["constructor"](target)
-        tchisla = solver["solver"](n, current_target)
+        tchisla = solver["solver"](n, current_target, verbose)
         max_depth = depth
         depth = tchisla.solve(max_depth)
         if depth is None:
@@ -75,6 +76,11 @@ def main():
     parser.add_argument('-d', '--max-depth',
         type=int,
         help='max search depth'
+    )
+    parser.add_argument('-v', '--verbose',
+        action='store_true',
+        default=False,
+        help='enable detailed output'
     )
     parser.add_argument('problem',
         nargs='+',

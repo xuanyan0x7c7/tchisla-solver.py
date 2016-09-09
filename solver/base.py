@@ -13,12 +13,13 @@ class BaseTchisla:
     __metaclass__ = ABCMeta
     __slots__ = ("n", "target", "solutions", "visited", "number_printed")
 
-    def __init__(self, n, target):
+    def __init__(self, n, target, verbose = False):
         self.n = n
         self.target = self.constructor(target)
         self.solutions = {}
         self.visited = [[]]
         self.number_printed = set()
+        self.verbose = verbose
 
     def insert(self, x, depth, expression):
         self.solutions[x] = depth, expression
@@ -109,6 +110,8 @@ class BaseTchisla:
         for depth in count(1):
             if depth == max_depth:
                 return
+            if self.verbose:
+                print(depth)
             try:
                 self.search(depth)
             except SolutionFoundError:
