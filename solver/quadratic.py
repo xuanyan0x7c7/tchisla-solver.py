@@ -51,7 +51,13 @@ class QuadraticTchisla(BaseTchisla):
     def exponent(self, p, q, depth):
         if not self.integer_check(q) or p == 1:
             return
+        base = math.log2(max(p.rational_part.numerator, p.rational_part.denominator))
         q_max = q.rational_part.numerator
+        while base * (q_max - p.quadratic_power) > self.MAX_DIGITS:
+            if q_max & 1 == 0:
+                q_max >>= 1
+            else:
+                return
         q_min = q_max
         exp = (Expression("^", p, q), Expression("^", p, Expression("-", q)))
         while q_min & 1 == 0:
