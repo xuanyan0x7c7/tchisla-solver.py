@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import sys
 import re
+from argparse import ArgumentParser
 from gmpy2 import mpq as Fraction
 from quadratic import Quadratic
 from solver.integral import IntegralTchisla
@@ -28,14 +28,17 @@ solvers = {
     ]
 }
 
-def general_solver(n, target, solver_type, max_depth = None):
+def general_solver(n, target, options):
+    max_depth = options.max_depth
+    solver_type = options.solver
+    verbose = options.verbose
     depth = max_depth and max_depth + 1
     solution = None
     for solver in solvers[solver_type]:
         if not solver["regex"].match(target):
             continue
         current_target = solver["constructor"](target)
-        tchisla = solver["solver"](n, current_target)
+        tchisla = solver["solver"](n, current_target, verbose)
         max_depth = depth
         depth = tchisla.solve(max_depth)
         if depth is None:
@@ -47,7 +50,7 @@ def general_solver(n, target, solver_type, max_depth = None):
         for string in solution:
             print(string)
 
-def solve(string, solver_type, max_depth = None):
+def solve(string, options):
     if "#" in string:
         array = string.split("#")
         if len(array) == 2:
@@ -56,26 +59,37 @@ def solve(string, solver_type, max_depth = None):
             if integral_re.match(n) and number_re.match(target):
                 n = int(n)
                 print(str(target) + " # " + str(n))
-                general_solver(n, target, solver_type, max_depth)
+                general_solver(n, target, options)
     elif number_re.match(string):
         for n in range(1, 10):
             print(str(string) + " # " + str(n))
-            general_solver(n, string, solver_type, max_depth)
+            general_solver(n, string, options)
 
-def main(argv):
-    solver = "incremental"
-    max_depth = None
-    problem_list = []
-    for arg in argv:
-        if arg[:9] == "--solver=":
-            solver = arg[9:]
-        elif arg[:12] == "--max-depth=":
-            max_depth = int(arg[12:])
-        else:
-            problem_list.append(arg)
+def main():
+    parser = ArgumentParser()
+    parser.add_argument('--solver',
+        default='incremental',
+        type=str,
+        choices=list(solvers.keys()),
+        help='choose a solver'
+    )
+    parser.add_argument('-d', '--max-depth',
+        type=int,
+        help='max search depth'
+    )
+    parser.add_argument('-v', '--verbose',
+        action='store_true',
+        default=False,
+        help='enable detailed output'
+    )
+    parser.add_argument('problem',
+        nargs='+',
+        help='problem to solve'
+    )
+    options = parser.parse_args()
+    problem_list = options.problem
     for problem in problem_list:
-        solve(problem, solver, max_depth)
+        solve(problem, options)
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        main(sys.argv[1:])
+    main()

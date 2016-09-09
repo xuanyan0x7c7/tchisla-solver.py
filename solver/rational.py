@@ -12,8 +12,8 @@ class RationalTchisla(BaseTchisla):
     MAX_CONCAT = 20
     MAX_FACTORIAL = 20
 
-    def __init__(self, n, target):
-        super().__init__(n, target)
+    def __init__(self, n, target, verbose = False):
+        super().__init__(n, target, verbose)
 
     def range_check(self, x):
         return x.numerator <= self.MAX and x.denominator <= self.MAX
