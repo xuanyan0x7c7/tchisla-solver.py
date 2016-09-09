@@ -50,6 +50,8 @@ class Quadratic(numbers.Real):
         else:
             return str(self.rational_part)
 
+    __repr__ = __str__
+
     def _operator_fallbacks(monomorphic_operator, fallback_operator):
         def forward(a, b):
             if isinstance(b, (int, mpz_type, mpq_type, Quadratic)):
