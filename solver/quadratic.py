@@ -60,10 +60,10 @@ class QuadraticTchisla(BaseTchisla):
             else:
                 return
         q_min = q_max
-        exp = (Expression("^", p, q), Expression("^", p, Expression("-", q)))
+        exp = Expression("^", p, q), Expression("^", p, Expression("-", q))
         while q_min & 1 == 0:
             q_min >>= 1
-            exp = (Expression("sqrt", exp[0]), Expression("sqrt", exp[1]))
+            exp = Expression("sqrt", exp[0]), Expression("sqrt", exp[1])
         q = q_min
         x = p ** q
         while q <= q_max:
