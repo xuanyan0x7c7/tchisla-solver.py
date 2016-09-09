@@ -12,6 +12,7 @@ class QuadraticTchisla(BaseTchisla):
     MAX_DIGITS = 16
     MAX_CONCAT = 5
     MAX_FACTORIAL = 8
+    MAX_QUADRATIC_POWER = 3
 
     def __init__(self, n, target):
         super().__init__(n, target)
@@ -76,7 +77,7 @@ class QuadraticTchisla(BaseTchisla):
                 exp = exp[0].args[0], exp[1].args[0]
 
     def sqrt(self, x, depth):
-        if x.quadratic_power < 3:
+        if x.quadratic_power < self.MAX_QUADRATIC_POWER:
             y = Quadratic.sqrt(x)
             if y is not None:
                 self.check(y, depth, Expression("sqrt", x))
