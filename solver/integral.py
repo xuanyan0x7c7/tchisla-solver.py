@@ -18,6 +18,9 @@ class IntegralTchisla(BaseTchisla):
     def range_check(self, x):
         return x <= self.MAX
 
+    def integer_check(self, x):
+        return True
+
     def divide(self, p, q, depth):
         if p < q:
             p, q = q, p
