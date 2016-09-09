@@ -23,8 +23,8 @@ solvers = {
     ]
 }
 
-def general_solver(n, target, solver_type):
-    depth = None
+def general_solver(n, target, solver_type, max_depth = None):
+    depth = max_depth and max_depth + 1
     solution = None
     for solver in solvers[solver_type]:
         if not solver["regex"].match(target):
@@ -32,19 +32,17 @@ def general_solver(n, target, solver_type):
         current_target = solver["constructor"](target)
         tchisla = solver["solver"](n, current_target)
         max_depth = depth
-        original_solution = solution
         depth = tchisla.solve(max_depth)
-        solution = tchisla.solution_prettyprint(current_target, True)
-        if not solution:
+        if depth is None:
             depth = max_depth
-            solution = original_solution
             continue
-        if original_solution:
+        if solution:
             print("=" * 20)
+        solution = tchisla.solution_prettyprint(current_target, True)
         for string in solution:
             print(string)
 
-def solve(string, solver_type):
+def solve(string, solver_type, max_depth = None):
     if "#" in string:
         array = string.split("#")
         if len(array) == 2:
@@ -53,19 +51,25 @@ def solve(string, solver_type):
             if integral_re.match(n) and number_re.match(target):
                 n = int(n)
                 print(str(target) + " # " + str(n))
-                general_solver(n, target, solver_type)
+                general_solver(n, target, solver_type, max_depth)
     elif number_re.match(string):
         for n in range(1, 10):
             print(str(string) + " # " + str(n))
-            general_solver(n, string, solver_type)
+            general_solver(n, string, solver_type, max_depth)
 
 def main(argv):
-    if argv[0][:2] == "--":
-        for string in argv[1:]:
-            solve(string, argv[0][2:])
-    else:
-        for string in argv:
-            solve(string, "incremental")
+    solver = "incremental"
+    max_depth = None
+    problem_list = []
+    for arg in argv:
+        if arg[:9] == "--solver=":
+            solver = arg[9:]
+        elif arg[:12] == "--max-depth=":
+            max_depth = int(arg[12:])
+        else:
+            problem_list.append(arg)
+    for problem in problem_list:
+        solve(problem, solver, max_depth)
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
