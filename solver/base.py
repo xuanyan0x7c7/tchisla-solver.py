@@ -48,19 +48,23 @@ class BaseTchisla:
     def subtract(self, p, q, depth):
         if p == q:
             return
-        elif p < q:
-            p, q = q, p
-        self.check(p - q, depth, Expression("-", p, q))
+        result = p - q
+        if result < 0:
+            self.check(-result, depth, Expression("-", q, p))
+        else:
+            self.check(result, depth, Expression("-", p, q))
 
     def multiply(self, p, q, depth):
         self.check(p * q, depth, Expression("*", p, q))
 
     def divide(self, p, q, depth):
-        if p < q:
-            p, q = q, p
         quotient = p / q
-        self.check(quotient, depth, Expression("/", p, q))
-        self.check(quotient ** -1, depth, Expression("/", q, p))
+        if quotient < 1:
+            self.check(quotient ** -1, depth, Expression("/", q, p))
+            self.check(quotient, depth, Expression("/", p, q))
+        else:
+            self.check(quotient, depth, Expression("/", p, q))
+            self.check(quotient ** -1, depth, Expression("/", q, p))
 
     @abstractmethod
     def exponent(self, p, q, depth):
