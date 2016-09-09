@@ -24,8 +24,7 @@ solvers = {
     ],
     "incremental": [
         {"regex": integral_re, "constructor": int, "solver": IntegralTchisla},
-        {"regex": rational_re, "constructor": Fraction, "solver": RationalTchisla},
-        {"regex": rational_re, "constructor": Quadratic, "solver": QuadraticTchisla}
+        {"regex": rational_re, "constructor": Fraction, "solver": RationalTchisla}
     ]
 }
 
