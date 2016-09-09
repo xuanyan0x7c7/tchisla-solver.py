@@ -40,7 +40,7 @@ class Quadratic(numbers.Real):
     def __str__(self):
         if self.quadratic_part:
             q = reduce(operator.mul, starmap(operator.pow, zip(primes, self.quadratic_part)))
-            quadratic_part_string = "sqrt(" * self.quadratic_power + str(q) + ")" * self.quadratic_power
+            quadratic_part_string = "s" * self.quadratic_power + "qrt(" + str(q) + ")"
             if self.rational_part == 1:
                 return quadratic_part_string
             elif self.rational_part == -1:
