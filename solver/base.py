@@ -1,4 +1,5 @@
 from itertools import count, product, combinations_with_replacement, chain
+from abc import ABCMeta, abstractmethod
 from gmpy2 import mpq as Fraction, fac as factorial
 from expression import Expression
 
@@ -9,14 +10,16 @@ class SolutionFoundError(Exception):
         self.message = message
 
 class BaseTchisla:
-    __slots__ = ("n", "target", "solutions", "visited", "number_printed")
+    __metaclass__ = ABCMeta
+    __slots__ = ("n", "target", "solutions", "visited", "number_printed", "verbose")
 
-    def __init__(self, n, target):
+    def __init__(self, n, target, verbose = False):
         self.n = n
         self.target = self.constructor(target)
         self.solutions = {}
         self.visited = [[]]
         self.number_printed = set()
+        self.verbose = verbose
 
     def insert(self, x, depth, expression):
         self.solutions[x] = depth, expression
@@ -24,15 +27,22 @@ class BaseTchisla:
         if x == self.target:
             raise SolutionFoundError(str(self.target) + "#" + str(self.n))
 
+    @abstractmethod
     def range_check(self, x):
-        raise NotImplementedError
+        pass
 
-    def check(self, x, depth, expression):
+    @abstractmethod
+    def integer_check(self, x):
+        pass
+
+    def check(self, x, depth, expression, need_sqrt = True):
         if not self.range_check(x) or x in self.solutions:
             return
         self.insert(x, depth, expression)
-        self.sqrt(x, depth)
-        self.factorial(x, depth)
+        if need_sqrt:
+            self.sqrt(x, depth)
+        if self.integer_check(x):
+            self.factorial(x, depth)
 
     def concat(self, depth):
         if depth <= self.MAX_CONCAT:
@@ -45,28 +55,34 @@ class BaseTchisla:
     def subtract(self, p, q, depth):
         if p == q:
             return
-        elif p < q:
-            p, q = q, p
-        self.check(p - q, depth, Expression("-", p, q))
+        result = p - q
+        if result < 0:
+            self.check(-result, depth, Expression("-", q, p))
+        else:
+            self.check(result, depth, Expression("-", p, q))
 
     def multiply(self, p, q, depth):
         self.check(p * q, depth, Expression("*", p, q))
 
     def divide(self, p, q, depth):
-        if p < q:
-            p, q = q, p
         quotient = p / q
-        self.check(quotient, depth, Expression("/", p, q))
-        self.check(quotient ** -1, depth, Expression("/", q, p))
+        if quotient < 1:
+            self.check(quotient ** -1, depth, Expression("/", q, p))
+            self.check(quotient, depth, Expression("/", p, q))
+        else:
+            self.check(quotient, depth, Expression("/", p, q))
+            self.check(quotient ** -1, depth, Expression("/", q, p))
 
+    @abstractmethod
     def exponent(self, p, q, depth):
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def sqrt(self, x, depth):
-        raise NotImplementedError
+        pass
 
     def factorial(self, x, depth):
-        if x <= self.MAX_FACTORIAL:
+        if int(x) <= self.MAX_FACTORIAL:
             y = self.constructor(factorial(int(x)))
             self.check(y, depth, Expression("factorial", x))
 
@@ -93,7 +109,9 @@ class BaseTchisla:
     def solve(self, max_depth = None):
         for depth in count(1):
             if depth == max_depth:
-                return None
+                return
+            if self.verbose:
+                print(depth)
             try:
                 self.search(depth)
             except SolutionFoundError:
@@ -107,14 +125,13 @@ class BaseTchisla:
         else:
             return string + " = " + str(expression)
 
-    @staticmethod
-    def requirements(expression):
-        if type(expression) is Expression:
-            return chain.from_iterable(map(BaseTchisla.requirements, expression.args))
-        else:
-            return (expression,)
-
     def solution_prettyprint(self, n, force_print = False):
+        def requirements(expression):
+            if type(expression) is Expression:
+                return chain.from_iterable(map(requirements, expression.args))
+            else:
+                return (expression,)
+
         if n in self.number_printed or n not in self.solutions:
             return []
         depth, expression = self.solutions[n]
@@ -122,6 +139,6 @@ class BaseTchisla:
             return []
         solution_list = [self.printer(n)]
         self.number_printed.add(n)
-        for x in BaseTchisla.requirements(expression):
+        for x in requirements(expression):
             solution_list += self.solution_prettyprint(x)
         return solution_list

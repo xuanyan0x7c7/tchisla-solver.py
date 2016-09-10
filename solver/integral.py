@@ -12,11 +12,14 @@ class IntegralTchisla(BaseTchisla):
     MAX_CONCAT = 39
     MAX_FACTORIAL = 34
 
-    def __init__(self, n, target):
-        super().__init__(n, target)
+    def __init__(self, n, target, verbose = False):
+        super().__init__(n, target, verbose)
 
     def range_check(self, x):
         return x <= self.MAX
+
+    def integer_check(self, x):
+        return True
 
     def divide(self, p, q, depth):
         if p < q:

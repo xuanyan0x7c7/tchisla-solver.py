@@ -11,12 +11,16 @@ class Expression:
         if not self.args:
             return ""
         elif len(self.args) == 1:
-            arg = str(self.args[0])
             if self.name == "sqrt":
-                return "sqrt(" + arg + ")"
+                sqrt_depth = 1
+                arg = self.args[0]
+                while type(arg) is Expression and arg.name == "sqrt":
+                    sqrt_depth += 1
+                    arg = arg.args[0]
+                return "s" * sqrt_depth + "qrt(" + str(arg) + ")"
             elif self.name == "factorial":
-                return arg + "!"
+                return str(self.args[0]) + "!"
             elif self.name == "-":
-                return "-" + arg
+                return "-" + str(self.args[0])
         else:
             return (" " + self.name + " ").join(map(str, self.args))
