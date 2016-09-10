@@ -72,7 +72,7 @@ class QuadraticTchisla(BaseTchisla):
             self.check(Quadratic.inverse(x), depth, exp[1], need_sqrt = q == q_min)
             q <<= 1
             x = Quadratic.square(x)
-            if q != q_max:
+            if q <= q_max:
                 exp = exp[0].args[0], exp[1].args[0]
 
     def sqrt(self, x, depth):
