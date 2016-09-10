@@ -32,8 +32,6 @@ class QuadraticTchisla(BaseTchisla):
     def subtract(self, p, q, depth):
         if p == q:
             return
-        if p.rational_part < q.rational_part:
-            p, q = q, p
         result = p - q
         if result is not None:
             if result.rational_part < 0:

@@ -31,10 +31,7 @@ class Quadratic(numbers.Real):
             self.quadratic_part = quadratic_part
             return self
         elif isinstance(rational_part, Quadratic):
-            self.rational_part = rational_part.rational_part
-            self.quadratic_power = rational_part.quadratic_power
-            self.quadratic_part = rational_part.quadratic_part
-            return self
+            return rational_part
         else:
             raise NotImplementedError
 
