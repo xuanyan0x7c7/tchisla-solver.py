@@ -13,28 +13,24 @@ rational_re = re.compile("^\\d+(/\\d+)?$")
 number_re = rational_re
 
 solvers = {
-    "integral": [
-        {"regex": integral_re, "constructor": int, "solver": IntegralTchisla}
-    ],
-    "rational": [
-        {"regex": rational_re, "constructor": Fraction, "solver": RationalTchisla}
-    ],
-    "quadratic": [
-        {"regex": rational_re, "constructor": Quadratic, "solver": QuadraticTchisla}
-    ],
-    "incremental": [
-        {"regex": integral_re, "constructor": int, "solver": IntegralTchisla},
-        {"regex": rational_re, "constructor": Fraction, "solver": RationalTchisla}
-    ]
+    "integral": {
+        "regex": integral_re, "constructor": int, "solver": IntegralTchisla
+    },
+    "rational": {
+        "regex": rational_re, "constructor": Fraction, "solver": RationalTchisla
+    },
+    "quadratic": {
+        "regex": rational_re, "constructor": Quadratic, "solver": QuadraticTchisla
+    }
 }
 
 def general_solver(n, target, options):
     max_depth = options.max_depth
-    solver_type = options.solver
     verbose = options.verbose
     depth = max_depth and max_depth + 1
     solution = None
-    for solver in solvers[solver_type]:
+    for solver_key in options.solvers:
+        solver = solvers[solver_key]
         if not solver["regex"].match(target):
             continue
         current_target = solver["constructor"](target)
@@ -66,12 +62,13 @@ def solve(string, options):
             general_solver(n, string, options)
 
 def main():
+    default_solvers = ['integral', 'rational']
     parser = ArgumentParser()
-    parser.add_argument('--solver',
-        default='incremental',
-        type=str,
+    parser.add_argument('-s', '--add-solver',
+        dest='solvers',
+        action='append',
         choices=list(solvers.keys()),
-        help='choose a solver'
+        help='set solvers list, add one solver each time, the default set is ' + str(default_solvers)
     )
     parser.add_argument('-d', '--max-depth',
         type=int,
@@ -88,6 +85,8 @@ def main():
     )
     options = parser.parse_args()
     problem_list = options.problem
+    if not options.solvers:
+        options.solvers=default_solvers
     for problem in problem_list:
         solve(problem, options)
 
