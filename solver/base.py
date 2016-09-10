@@ -11,7 +11,7 @@ class SolutionFoundError(Exception):
 
 class BaseTchisla:
     __metaclass__ = ABCMeta
-    __slots__ = ("n", "target", "solutions", "visited", "number_printed")
+    __slots__ = ("n", "target", "solutions", "visited", "number_printed", "verbose")
 
     def __init__(self, n, target, verbose = False):
         self.n = n
