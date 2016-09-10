@@ -55,7 +55,7 @@ class QuadraticTchisla(BaseTchisla):
         base = math.log2(max(p.rational_part.numerator, p.rational_part.denominator))
         exp = Expression("^", p, q), Expression("^", p, Expression("-", q))
         q_max = q.rational_part.numerator
-        while base * (q_max - p.quadratic_power) > self.MAX_DIGITS:
+        while base * q_max > self.MAX_DIGITS << p.quadratic_power:
             if q_max & 1 == 0:
                 q_max >>= 1
                 exp = Expression("sqrt", exp[0]), Expression("sqrt", exp[1])
