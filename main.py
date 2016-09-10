@@ -49,6 +49,8 @@ def general_solver(n, target, options):
         solution = tchisla.solution_prettyprint(current_target, True)
         for string in solution:
             print(string)
+        if verbose:
+            print('\007', end='')
 
 def solve(problem, options):
     print(problem[0], '#', problem[1])
