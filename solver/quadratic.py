@@ -71,10 +71,10 @@ class QuadraticTchisla(BaseTchisla):
             if not self.range_check(x):
                 break
             self.check(x, depth, exp[0], need_sqrt = q == q_min)
-            self.check(x ** -1, depth, exp[1], need_sqrt = q == q_min)
+            self.check(Quadratic.inverse(x), depth, exp[1], need_sqrt = q == q_min)
             q <<= 1
-            x **= 2
-            if type(exp[0]) is Expression:
+            x = Quadratic.square(x)
+            if q != q_max:
                 exp = exp[0].args[0], exp[1].args[0]
 
     def sqrt(self, x, depth):
