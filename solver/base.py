@@ -35,7 +35,7 @@ class BaseTchisla:
     def integer_check(self, x):
         pass
 
-    def check(self, x, depth, expression, need_sqrt = True):
+    def check(self, x, depth, expression, *, need_sqrt = True):
         if not self.range_check(x) or x in self.solutions:
             return
         self.insert(x, depth, expression)
@@ -106,7 +106,7 @@ class BaseTchisla:
             for p, q in combinations_with_replacement(self.visited[depth >> 1], 2):
                 self.binary_operation(p, q, depth)
 
-    def solve(self, max_depth = None):
+    def solve(self, *, max_depth = None):
         for depth in count(1):
             if depth == max_depth:
                 return
@@ -125,10 +125,10 @@ class BaseTchisla:
         else:
             return string + " = " + str(expression)
 
-    def solution_prettyprint(self, n, force_print = False):
+    def solution_prettyprint(self, n, *, force_print = False):
         def requirements(expression):
             if type(expression) is Expression:
-                return chain.from_iterable(map(requirements, expression.args))
+                return chain(*map(requirements, expression.args))
             else:
                 return (expression,)
 

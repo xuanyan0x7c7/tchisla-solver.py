@@ -46,13 +46,13 @@ def general_solver(n, target, options):
         current_target = solver["constructor"](target)
         tchisla = solver["solver"](n, current_target, verbose)
         max_depth = depth
-        depth = tchisla.solve(max_depth)
+        depth = tchisla.solve(max_depth=max_depth)
         if depth is None:
             depth = max_depth
             continue
         if solution:
             print("=" * 20)
-        solution = tchisla.solution_prettyprint(current_target, True)
+        solution = tchisla.solution_prettyprint(current_target, force_print=True)
         for string in solution:
             print(string)
         if verbose:
