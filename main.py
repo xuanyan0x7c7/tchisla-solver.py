@@ -92,10 +92,7 @@ def parse_digits(digits):
             continue
         first = int(m.group('first'))
         last = m.group('last')
-        if last:
-            last = int(last)
-        if not last:
-            last = first
+        last = int(last) if last else first
         if first > last:
             first, last = last, first
         digit_list = digit_list | set(range(first, last + 1))
