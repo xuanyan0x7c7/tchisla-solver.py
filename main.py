@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import re
+import re, json
+from urllib import request
 from argparse import ArgumentParser
 from gmpy2 import mpq as Fraction
 from quadratic import Quadratic
@@ -32,6 +33,11 @@ def general_solver(n, target, options):
     max_depth = options.max_depth
     verbose = options.verbose
     depth = max_depth and max_depth + 1
+    if options.check_wr:
+        record = fetchRecord(target, n)
+        record = int(record['digits_count']) if record else None
+        if record:
+            depth = record
     solution = None
     for solver_key in options.solvers:
         solver = solvers[solver_key]
@@ -51,6 +57,9 @@ def general_solver(n, target, options):
             print(string)
         if verbose:
             print('\007', end='')
+    if depth and options.check_wr:
+        if not record or record > depth:
+            print('New WR Found!')
 
 def solve(problem, options):
     print(problem[0], '#', problem[1])
@@ -119,6 +128,12 @@ def parse_targets(targets):
     target_list = sorted(target_list)
     return target_list
 
+def fetchRecord(target, digit):
+    url = 'http://www.euclidea.xyz/api/v1/game/numbers/solutions/records?query=[{},{}]'.format(target, digit)
+    r = request.urlopen(url)
+    content = json.loads(r.read().decode('utf-8'))
+    records = content['records']
+    return records[0] if records else None
 
 
 def main():
@@ -133,6 +148,11 @@ def main():
     parser.add_argument('-d', '--max-depth',
         type=int,
         help='max search depth'
+    )
+    parser.add_argument('-c', '--check-wr',
+        action='store_true',
+        default=False,
+        help='switch mode to try to find a solution shorter than the current WR',
     )
     parser.add_argument('-v', '--verbose',
         action='store_true',
