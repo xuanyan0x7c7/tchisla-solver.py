@@ -57,7 +57,7 @@ def solve(problem, options):
     general_solver(problem[1], problem[0], options)
 
 def parse_problems(problems):
-    problem_list = []
+    problem_list = set()
     for each in problems:
         m = problems_re.match(each)
         if not m:
@@ -72,8 +72,8 @@ def parse_problems(problems):
 
         for target in targets:
             for digit in digits:
-                problem_list.append((target, digit))
-    problem_list = sorted(set(problem_list))
+                problem_list.add((target, digit))
+    problem_list = sorted(problem_list)
 
     return problem_list
 
@@ -84,7 +84,7 @@ def to_number(string):
     return number
 
 def parse_digits(digits):
-    digit_list = []
+    digit_list = set()
     digits = digits.split(',')
     for each in digits:
         m = digits_re.match(each)
@@ -98,13 +98,13 @@ def parse_digits(digits):
             last = first
         if first > last:
             first, last = last, first
-        digit_list = digit_list + list(range(first, last + 1))
-    digit_list = sorted(set(digit_list))
+        digit_list = digit_list | set(range(first, last + 1))
+    digit_list = sorted(digit_list)
     return digit_list
 
 
 def parse_targets(targets):
-    target_list = []
+    target_list = set()
     targets = targets.split(',')
     for each in targets:
         m = targets_re.match(each)
@@ -112,14 +112,14 @@ def parse_targets(targets):
             continue
         target = m.group('target')
         if target:
-            target_list.append(to_number(target))
+            target_list.add(to_number(target))
             continue
         start = int(m.group('start'))
         end = int(m.group('end'))
         if start > end:
             start, end = end, start
-        target_list = target_list + list(range(start, end + 1))
-    target_list = sorted(set(target_list))
+        target_list = target_list | set(range(start, end + 1))
+    target_list = sorted(target_list)
     return target_list
 
 
