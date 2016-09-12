@@ -1,4 +1,7 @@
+import math
+import operator
 from itertools import count, product, combinations_with_replacement, chain
+from functools import reduce
 from abc import ABCMeta, abstractmethod
 from gmpy2 import mpq as Fraction, fac as factorial
 from expression import Expression
@@ -73,6 +76,23 @@ class BaseTchisla:
             self.check(quotient, depth, Expression("/", p, q))
             self.check(quotient ** -1, depth, Expression("/", q, p))
 
+    def factorial_divide(self, p, q, depth):
+        if p == q or not self.integer_check(p) or not self.integer_check(q):
+            return
+        x = int(p)
+        y = int(q)
+        if x < y:
+            x, y = y, x
+            p, q = q, p
+        if x <= self.MAX_FACTORIAL or y <= 2 or x - y == 1 or (x - y) * (math.log2(x) + math.log2(y)) > self.MAX_DIGITS:
+            return
+        result = reduce(operator.mul, range(x, y, -1))
+        self.check(self.constructor(result), depth, Expression(
+            "/",
+            Expression("factorial", p),
+            Expression("factorial", q)
+        ))
+
     @abstractmethod
     def exponent(self, p, q, depth):
         pass
@@ -91,6 +111,7 @@ class BaseTchisla:
         self.subtract(p, q, depth)
         self.multiply(p, q, depth)
         self.divide(p, q, depth)
+        self.factorial_divide(p, q, depth)
         self.exponent(p, q, depth)
         self.exponent(q, p, depth)
 
