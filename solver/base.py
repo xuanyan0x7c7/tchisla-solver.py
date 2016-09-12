@@ -20,7 +20,7 @@ class BaseTchisla:
         self.n = n
         self.target = self.constructor(target)
         self.solutions = {}
-        self.visited = [[]]
+        self.visited = [None, []]
         self.number_printed = set()
         self.verbose = verbose
 
@@ -84,14 +84,23 @@ class BaseTchisla:
         if x < y:
             x, y = y, x
             p, q = q, p
-        if x <= self.MAX_FACTORIAL or y <= 2 or x - y == 1 or (x - y) * (math.log2(x) + math.log2(y)) > self.MAX_DIGITS:
+        if x <= self.MAX_FACTORIAL or y <= 2 or x - y == 1 or (x - y) * (math.log2(x) + math.log2(y)) > self.MAX_DIGITS << 1:
             return
         result = reduce(operator.mul, range(x, y, -1))
-        self.check(self.constructor(result), depth, Expression(
-            "/",
-            Expression("factorial", p),
-            Expression("factorial", q)
-        ))
+        p_factorial = Expression("factorial", p)
+        q_factorial = Expression("factorial", q)
+        self.check(self.constructor(result), depth, Expression("/", p_factorial, q_factorial))
+        if self.solutions[q][0] == 1:
+            self.check(self.constructor(result - 1), depth + 1, Expression(
+                "/",
+                Expression("-", p_factorial, q_factorial),
+                q_factorial
+            ))
+            self.check(self.constructor(result + 1), depth + 1, Expression(
+                "/",
+                Expression("+", p_factorial, q_factorial),
+                q_factorial
+            ))
 
     @abstractmethod
     def exponent(self, p, q, depth):
@@ -111,7 +120,6 @@ class BaseTchisla:
         self.subtract(p, q, depth)
         self.multiply(p, q, depth)
         self.divide(p, q, depth)
-        self.factorial_divide(p, q, depth)
         self.exponent(p, q, depth)
         self.exponent(q, p, depth)
 
@@ -126,6 +134,13 @@ class BaseTchisla:
         if depth & 1 == 0:
             for p, q in combinations_with_replacement(self.visited[depth >> 1], 2):
                 self.binary_operation(p, q, depth)
+        for d1 in range(1, (depth + 1) >> 1):
+            d2 = depth - d1
+            for p, q in product(self.visited[d1], self.visited[d2]):
+                self.factorial_divide(p, q, depth)
+        if depth & 1 == 0:
+            for p, q in combinations_with_replacement(self.visited[depth >> 1], 2):
+                self.factorial_divide(p, q, depth)
 
     def solve(self, *, max_depth = None):
         for depth in count(1):
