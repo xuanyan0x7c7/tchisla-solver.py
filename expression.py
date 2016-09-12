@@ -3,13 +3,13 @@ __all__ = ["Expression"]
 class Expression:
     __slots__ = ("name", "args")
 
-    def __init__(self, name = None, *args):
+    def __init__(self, name, *args):
         self.name = name
         self.args = tuple(args)
 
     def __str__(self):
-        if not self.args:
-            return ""
+        if self.name == "concat":
+            return str(self.args[0])
         elif len(self.args) == 1:
             if self.name == "sqrt":
                 sqrt_depth = 1

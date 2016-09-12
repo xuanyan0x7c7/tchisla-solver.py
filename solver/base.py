@@ -50,7 +50,7 @@ class BaseTchisla:
     def concat(self, depth):
         if depth <= self.MAX_CONCAT:
             x = self.constructor((10 ** depth - 1) // 9 * self.n)
-            self.check(x, depth, Expression())
+            self.check(x, depth, Expression("concat", x))
 
     def add(self, p, q, depth):
         self.check(p + q, depth, Expression("+", p, q))
@@ -156,7 +156,7 @@ class BaseTchisla:
     def printer(self, n):
         depth, expression = self.solutions[n]
         string = str(depth) + ": " + str(n)
-        if expression.name is None:
+        if expression.name == "concat":
             return string
         else:
             return string + " = " + str(expression)
@@ -171,7 +171,7 @@ class BaseTchisla:
         if n in self.number_printed or n not in self.solutions:
             return []
         depth, expression = self.solutions[n]
-        if expression.name is None and not force_print:
+        if expression.name == "concat" and not force_print:
             return []
         solution_list = [self.printer(n)]
         self.number_printed.add(n)
