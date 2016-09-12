@@ -14,15 +14,15 @@ class SolutionFoundError(Exception):
 
 class BaseTchisla:
     __metaclass__ = ABCMeta
-    __slots__ = ("n", "target", "solutions", "visited", "number_printed", "verbose")
+    __slots__ = ("n", "target", "solutions", "max_depth", "visited", "number_printed")
 
-    def __init__(self, n, target, verbose = False):
+    def __init__(self, n, target):
         self.n = n
         self.target = self.constructor(target)
         self.solutions = {}
+        self.max_depth = None
         self.visited = [None, []]
         self.number_printed = set()
-        self.verbose = verbose
 
     def insert(self, x, depth, expression):
         self.solutions[x] = depth, expression
@@ -90,7 +90,7 @@ class BaseTchisla:
         p_factorial = Expression("factorial", p)
         q_factorial = Expression("factorial", q)
         self.check(self.constructor(result), depth, Expression("/", p_factorial, q_factorial))
-        if self.solutions[q][0] == 1:
+        if depth != self.max_depth and self.solutions[q][0] == 1:
             self.check(self.constructor(result - 1), depth + 1, Expression(
                 "/",
                 Expression("-", p_factorial, q_factorial),
@@ -142,16 +142,18 @@ class BaseTchisla:
             for p, q in combinations_with_replacement(self.visited[depth >> 1], 2):
                 self.factorial_divide(p, q, depth)
 
-    def solve(self, *, max_depth = None):
+    def solve(self, *, max_depth = None, verbose = False):
+        self.max_depth = max_depth
         for depth in count(1):
-            if depth == max_depth:
+            if depth - 1 == max_depth:
                 return
-            if self.verbose:
+            if verbose:
                 print(depth)
             try:
                 self.search(depth)
             except SolutionFoundError:
                 return depth
+
 
     def printer(self, n):
         depth, expression = self.solutions[n]

@@ -30,36 +30,39 @@ solvers = {
 }
 
 def general_solver(n, target, options):
-    max_depth = options.max_depth
+    depth = options.max_depth
     verbose = options.verbose
-    depth = max_depth and max_depth + 1
     if options.check_wr:
         record = fetchRecord(target, n)
         record = int(record['digits_count']) if record else None
         if record:
             depth = record
+        else:
+            print('New WR Found!')
+            return
     solution = None
     for solver_key in options.solvers:
         solver = solvers[solver_key]
         if not solver["regex"].match(str(target)):
             continue
         current_target = solver["constructor"](target)
-        tchisla = solver["solver"](n, current_target, verbose)
-        max_depth = depth
-        depth = tchisla.solve(max_depth=max_depth)
-        if depth is None:
-            depth = max_depth
+        tchisla = solver["solver"](n, current_target)
+        digits = tchisla.solve(
+            verbose = verbose,
+            max_depth = depth and depth - 1
+        )
+        if digits is None:
             continue
+        depth = digits
         if solution:
             print("=" * 20)
-        solution = tchisla.solution_prettyprint(current_target, force_print=True)
+        solution = tchisla.solution_prettyprint(current_target, force_print = True)
         for string in solution:
             print(string)
         if verbose:
             print('\007', end='')
-    if depth and options.check_wr:
-        if not record or record > depth:
-            print('New WR Found!')
+    if depth and options.check_wr and record > depth:
+        print('New WR Found!')
 
 def solve(problem, options):
     print(problem[0], '#', problem[1])
