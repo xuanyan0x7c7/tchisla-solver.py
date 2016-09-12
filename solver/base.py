@@ -3,6 +3,7 @@ import operator
 from itertools import count, product, combinations_with_replacement, chain
 from functools import reduce
 from abc import ABCMeta, abstractmethod
+from config import global_config
 from gmpy2 import mpq as Fraction, fac as factorial
 from expression import Expression
 
@@ -142,12 +143,12 @@ class BaseTchisla:
             for p, q in combinations_with_replacement(self.visited[depth >> 1], 2):
                 self.factorial_divide(p, q, depth)
 
-    def solve(self, *, max_depth = None, verbose = False):
+    def solve(self, *, max_depth = None):
         self.max_depth = max_depth
         for depth in count(1):
             if depth - 1 == max_depth:
                 return
-            if verbose:
+            if global_config["verbose"]:
                 print(depth)
             try:
                 self.search(depth)

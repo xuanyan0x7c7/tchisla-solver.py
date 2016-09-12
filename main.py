@@ -4,6 +4,7 @@ import re, json
 from urllib import request
 from argparse import ArgumentParser
 from gmpy2 import mpq as Fraction
+from config import global_config
 from quadratic import Quadratic
 from solver.integral import IntegralTchisla
 from solver.rational import RationalTchisla
@@ -31,7 +32,6 @@ solvers = {
 
 def general_solver(n, target, options):
     max_depth = options.max_depth
-    verbose = options.verbose
     depth = max_depth and max_depth + 1
     if options.check_wr:
         record = fetchRecord(target, n)
@@ -46,10 +46,7 @@ def general_solver(n, target, options):
         current_target = solver["constructor"](target)
         tchisla = solver["solver"](n, current_target)
         max_depth = depth
-        depth = tchisla.solve(
-            max_depth = max_depth and max_depth - 1,
-            verbose = verbose
-        )
+        depth = tchisla.solve(max_depth = max_depth and max_depth - 1)
         if depth is None:
             depth = max_depth
             continue
@@ -58,7 +55,7 @@ def general_solver(n, target, options):
         solution = tchisla.solution_prettyprint(current_target, force_print=True)
         for string in solution:
             print(string)
-        if verbose:
+        if global_config["verbose"]:
             print('\007', end='')
     if depth and options.check_wr:
         if not record or record > depth:
@@ -167,6 +164,7 @@ def main():
         help='problem to solve, examples: "2", "2#5", "[1,3]#8", "[2-4]#[6,7]", "[3-6,125,127]#[2-9]"'
     )
     options = parser.parse_args()
+    global_config["verbose"] = options.verbose
     if not options.solvers:
         options.solvers=default_solvers
     problem_list = parse_problems(options.problem)
