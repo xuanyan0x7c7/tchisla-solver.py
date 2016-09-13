@@ -162,7 +162,7 @@ class BaseTchisla:
         if expression.name == "concat":
             return string
         else:
-            return string + " = " + str(expression)
+            return string + " = " + Expression.str(expression, spaces = True)
 
     def solution_prettyprint(self, n, *, force_print = False):
         def requirements(expression):
