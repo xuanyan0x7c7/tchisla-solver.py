@@ -7,13 +7,13 @@ __all__ = ["IntegralTchisla"]
 
 class IntegralTchisla(BaseTchisla):
     constructor = int
-    MAX = 1 << 128
-    MAX_DIGITS = 128
-    MAX_CONCAT = 39
-    MAX_FACTORIAL = 34
+    MAX = 1 << 64
+    MAX_DIGITS = 64
+    MAX_CONCAT = 20
+    MAX_FACTORIAL = 20
 
-    def __init__(self, n, target, verbose = False):
-        super().__init__(n, target, verbose)
+    def __init__(self, n, target):
+        super().__init__(n, target)
 
     def range_check(self, x):
         return x <= self.MAX

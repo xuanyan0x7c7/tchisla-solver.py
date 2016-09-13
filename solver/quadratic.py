@@ -14,8 +14,8 @@ class QuadraticTchisla(BaseTchisla):
     MAX_FACTORIAL = 8
     MAX_QUADRATIC_POWER = 3
 
-    def __init__(self, n, target, verbose = False):
-        super().__init__(n, target, verbose)
+    def __init__(self, n, target):
+        super().__init__(n, target)
 
     def range_check(self, x):
         x = x.rational_part

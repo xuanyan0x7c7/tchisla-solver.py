@@ -1,5 +1,9 @@
+import math
+import operator
 from itertools import count, product, combinations_with_replacement, chain
+from functools import reduce
 from abc import ABCMeta, abstractmethod
+from config import global_config
 from gmpy2 import mpq as Fraction, fac as factorial
 from expression import Expression
 
@@ -11,15 +15,15 @@ class SolutionFoundError(Exception):
 
 class BaseTchisla:
     __metaclass__ = ABCMeta
-    __slots__ = ("n", "target", "solutions", "visited", "number_printed", "verbose")
+    __slots__ = ("n", "target", "solutions", "max_depth", "visited", "number_printed")
 
-    def __init__(self, n, target, verbose = False):
+    def __init__(self, n, target):
         self.n = n
         self.target = self.constructor(target)
         self.solutions = {}
-        self.visited = [[]]
+        self.max_depth = None
+        self.visited = [None, []]
         self.number_printed = set()
-        self.verbose = verbose
 
     def insert(self, x, depth, expression):
         self.solutions[x] = depth, expression
@@ -35,7 +39,7 @@ class BaseTchisla:
     def integer_check(self, x):
         pass
 
-    def check(self, x, depth, expression, need_sqrt = True):
+    def check(self, x, depth, expression, *, need_sqrt = True):
         if not self.range_check(x) or x in self.solutions:
             return
         self.insert(x, depth, expression)
@@ -47,7 +51,7 @@ class BaseTchisla:
     def concat(self, depth):
         if depth <= self.MAX_CONCAT:
             x = self.constructor((10 ** depth - 1) // 9 * self.n)
-            self.check(x, depth, Expression())
+            self.check(x, depth, Expression("concat", x))
 
     def add(self, p, q, depth):
         self.check(p + q, depth, Expression("+", p, q))
@@ -72,6 +76,32 @@ class BaseTchisla:
         else:
             self.check(quotient, depth, Expression("/", p, q))
             self.check(quotient ** -1, depth, Expression("/", q, p))
+
+    def factorial_divide(self, p, q, depth):
+        if p == q or not self.integer_check(p) or not self.integer_check(q):
+            return
+        x = int(p)
+        y = int(q)
+        if x < y:
+            x, y = y, x
+            p, q = q, p
+        if x <= self.MAX_FACTORIAL or y <= 2 or x - y == 1 or (x - y) * (math.log2(x) + math.log2(y)) > self.MAX_DIGITS << 1:
+            return
+        result = reduce(operator.mul, range(x, y, -1))
+        p_factorial = Expression("factorial", p)
+        q_factorial = Expression("factorial", q)
+        self.check(self.constructor(result), depth, Expression("/", p_factorial, q_factorial))
+        if depth != self.max_depth and self.solutions[q][0] == 1:
+            self.check(self.constructor(result - 1), depth + 1, Expression(
+                "/",
+                Expression("-", p_factorial, q_factorial),
+                q_factorial
+            ))
+            self.check(self.constructor(result + 1), depth + 1, Expression(
+                "/",
+                Expression("+", p_factorial, q_factorial),
+                q_factorial
+            ))
 
     @abstractmethod
     def exponent(self, p, q, depth):
@@ -105,37 +135,46 @@ class BaseTchisla:
         if depth & 1 == 0:
             for p, q in combinations_with_replacement(self.visited[depth >> 1], 2):
                 self.binary_operation(p, q, depth)
+        for d1 in range(1, (depth + 1) >> 1):
+            d2 = depth - d1
+            for p, q in product(self.visited[d1], self.visited[d2]):
+                self.factorial_divide(p, q, depth)
+        if depth & 1 == 0:
+            for p, q in combinations_with_replacement(self.visited[depth >> 1], 2):
+                self.factorial_divide(p, q, depth)
 
-    def solve(self, max_depth = None):
+    def solve(self, *, max_depth = None):
+        self.max_depth = max_depth
         for depth in count(1):
-            if depth == max_depth:
+            if depth - 1 == max_depth:
                 return
-            if self.verbose:
+            if global_config["verbose"]:
                 print(depth)
             try:
                 self.search(depth)
             except SolutionFoundError:
                 return depth
 
+
     def printer(self, n):
         depth, expression = self.solutions[n]
         string = str(depth) + ": " + str(n)
-        if expression.name is None:
+        if expression.name == "concat":
             return string
         else:
             return string + " = " + str(expression)
 
-    def solution_prettyprint(self, n, force_print = False):
+    def solution_prettyprint(self, n, *, force_print = False):
         def requirements(expression):
             if type(expression) is Expression:
-                return chain.from_iterable(map(requirements, expression.args))
+                return chain(*map(requirements, expression.args))
             else:
                 return (expression,)
 
         if n in self.number_printed or n not in self.solutions:
             return []
         depth, expression = self.solutions[n]
-        if expression.name is None and not force_print:
+        if expression.name == "concat" and not force_print:
             return []
         solution_list = [self.printer(n)]
         self.number_printed.add(n)

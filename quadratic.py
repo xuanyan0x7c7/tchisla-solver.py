@@ -8,7 +8,6 @@ from gmpy2 import mpz, mpq as Fraction, is_square, isqrt
 __all__ = ["Quadratic"]
 
 primes = (2, 3, 5, 7)
-prime_len = len(primes)
 
 def exp2(n):
     return {1: 0, 3: 1, 7: 2, 15: 3}[n ^ (n - 1)]
@@ -90,18 +89,16 @@ class Quadratic(numbers.Real):
         if y.quadratic_power == 0:
             return Quadratic(r, x.quadratic_power, x.quadratic_part)
 
-        p = x.quadratic_part
-        q = y.quadratic_part
         quadratic_power = max(x.quadratic_power, y.quadratic_power)
         exp_quadratic_power = 1 << quadratic_power
         shifts = quadratic_power - x.quadratic_power, quadratic_power - y.quadratic_power
         prime_power_list = []
         mask = 0
-        for index in range(prime_len):
-            power = (p[index] << shifts[0]) + (q[index] << shifts[1])
+        for prime, x_power, y_power in zip(primes, x.quadratic_part, y.quadratic_part):
+            power = (x_power << shifts[0]) + (y_power << shifts[1])
             if power >= exp_quadratic_power:
-                r *= primes[index]
-                power -= exp_quadratic_power
+                r *= prime
+                power ^= exp_quadratic_power
             prime_power_list.append(power)
             mask |= power
         if mask == 0:
@@ -120,17 +117,19 @@ class Quadratic(numbers.Real):
         if y.quadratic_power == 0:
             return Quadratic(r, x.quadratic_power, x.quadratic_part)
 
-        p = x.quadratic_part or (0,) * prime_len
-        q = y.quadratic_part
         quadratic_power = max(x.quadratic_power, y.quadratic_power)
         exp_quadratic_power = 1 << quadratic_power
         shifts = quadratic_power - x.quadratic_power, quadratic_power - y.quadratic_power
         prime_power_list = []
         mask = 0
-        for index in range(prime_len):
-            power = (p[index] << shifts[0]) - (q[index] << shifts[1])
+        for prime, x_power, y_power in zip(
+            primes,
+            x.quadratic_part or (0,) * len(primes),
+            y.quadratic_part
+        ):
+            power = (x_power << shifts[0]) - (y_power << shifts[1])
             if power < 0:
-                r /= primes[index]
+                r /= prime
                 power += exp_quadratic_power
             prime_power_list.append(power)
             mask |= power
@@ -166,20 +165,19 @@ class Quadratic(numbers.Real):
         p = x.quadratic_power
         if p == 0:
             return Quadratic(r)
-        q = x.quadratic_part
-        if p == 1:
-            for index in range(prime_len):
-                if q[index]:
-                    r *= primes[index]
+        elif p == 1:
+            for prime, power in zip(primes, x.quadratic_part):
+                if power:
+                    r *= prime
             return Quadratic(r)
         power_mask = 1 << (p - 1)
         prime_power_list = []
-        for index in range(prime_len):
-            if q[index] >= power_mask:
-                r *= primes[index]
-                prime_power_list.append(q[index] ^ power_mask)
+        for prime, power in zip(primes, x.quadratic_part):
+            if power >= power_mask:
+                r *= prime
+                prime_power_list.append(power ^ power_mask)
             else:
-                prime_power_list.append(q[index])
+                prime_power_list.append(power)
         return Quadratic(r, p - 1, tuple(prime_power_list))
 
     @staticmethod
@@ -190,10 +188,10 @@ class Quadratic(numbers.Real):
             return Quadratic(r)
         prime_base = 1
         prime_power_list = []
-        for index in range(prime_len):
-            if q[index]:
-                r /= primes[index]
-                prime_power_list.append((1 << x.quadratic_power) - q[index])
+        for prime, power in zip(primes, q):
+            if power:
+                r /= prime
+                prime_power_list.append((1 << x.quadratic_power) - power)
             else:
                 prime_power_list.append(0)
         return Quadratic(r, x.quadratic_power, tuple(prime_power_list))
@@ -202,10 +200,10 @@ class Quadratic(numbers.Real):
         power = None
         inverse = False
         if isinstance(y, (int, mpz_type)):
-            power = abs(y)
+            power = int(abs(y))
             inverse = y < 0
         elif y.quadratic_power == 0 and y.rational_part.denominator == 1:
-            power = abs(y.rational_part.numerator)
+            power = int(abs(y.rational_part.numerator))
             inverse = y.rational_part.numerator < 0
         else:
             raise NotImplementedError
@@ -213,18 +211,18 @@ class Quadratic(numbers.Real):
         if power == 0:
             return Quadratic(1)
         r = x.rational_part ** power
-        if x.quadratic_power == 0:
-            return Quadratic(r ** -1) if inverse else Quadratic(r)
         quadratic_power = x.quadratic_power
+        if quadratic_power == 0:
+            return Quadratic(r ** -1) if inverse else Quadratic(r)
         while quadratic_power and power & 1 == 0:
             quadratic_power -= 1
             power >>= 1
-        exp_quadratic_power = 1 << quadratic_power
+        exp_quadratic_power_m1 = (1 << quadratic_power) - 1
         prime_power_list = []
-        for index in range(prime_len):
-            p = x.quadratic_part[index] * power
-            r *= primes[index] ** (p // exp_quadratic_power)
-            prime_power_list.append(p % exp_quadratic_power)
+        for prime, x_power in zip(primes, x.quadratic_part):
+            p = x_power * power
+            r *= prime ** (p >> quadratic_power)
+            prime_power_list.append(p & exp_quadratic_power_m1)
         result = None
         if quadratic_power == 0:
             result = Quadratic(r)
@@ -239,7 +237,6 @@ class Quadratic(numbers.Real):
     def sqrt(x):
         p = x.rational_part
         s, t = p.numerator, p.denominator
-        q = x.quadratic_part
         if p == 0:
             return Quadratic()
         elif p < 0:
@@ -247,20 +244,17 @@ class Quadratic(numbers.Real):
         elif x.quadratic_power == 0:
             if is_square(s) and is_square(t):
                 return Quadratic(Fraction(isqrt(s), isqrt(t)))
-            else:
-                q = (0,) * prime_len
 
         r = Fraction(1, t)
         p = s * t
         prime_power_list = []
-        for index in range(prime_len):
-            prime = primes[index]
+        for prime, x_power in zip(primes, x.quadratic_part or (0,) * len(primes)):
             power = 0
             while p % prime == 0:
                 p //= prime
                 power += 1
             r *= prime ** (power >> 1)
-            prime_power_list.append(((power & 1) << x.quadratic_power) | q[index])
+            prime_power_list.append(((power & 1) << x.quadratic_power) | x_power)
         if not is_square(p):
             return
         return Quadratic(r * isqrt(p), x.quadratic_power + 1, tuple(prime_power_list))
