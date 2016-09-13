@@ -12,7 +12,7 @@ class QuadraticTchisla(BaseTchisla):
     MAX_DIGITS = 16
     MAX_CONCAT = 5
     MAX_FACTORIAL = 8
-    MAX_QUADRATIC_POWER = 2
+    MAX_QUADRATIC_POWER = 3
 
     def __init__(self, n, target):
         super().__init__(n, target)

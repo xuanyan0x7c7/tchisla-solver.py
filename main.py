@@ -143,7 +143,7 @@ def main():
         dest='solvers',
         action='append',
         choices=list(solvers.keys()),
-        help='set solvers list, add one solver each time, the default set is ' + str(default_solvers)
+        help='set solvers list from empty, add one solver each time, the default set is ' + str(default_solvers)
     )
     parser.add_argument('-d', '--max-depth',
         type=int,
