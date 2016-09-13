@@ -51,31 +51,31 @@ class BaseTchisla:
     def concat(self, depth):
         if depth <= self.MAX_CONCAT:
             x = self.constructor((10 ** depth - 1) // 9 * self.n)
-            self.check(x, depth, Expression("concat", x))
+            self.check(x, depth, Expression.concat(x))
 
     def add(self, p, q, depth):
-        self.check(p + q, depth, Expression("+", p, q))
+        self.check(p + q, depth, Expression.add(p, q))
 
     def subtract(self, p, q, depth):
         if p == q:
             return
         result = p - q
         if result < 0:
-            self.check(-result, depth, Expression("-", q, p))
+            self.check(-result, depth, Expression.subtract(q, p))
         else:
-            self.check(result, depth, Expression("-", p, q))
+            self.check(result, depth, Expression.subtract(p, q))
 
     def multiply(self, p, q, depth):
-        self.check(p * q, depth, Expression("*", p, q))
+        self.check(p * q, depth, Expression.multiply(p, q))
 
     def divide(self, p, q, depth):
         quotient = p / q
         if quotient < 1:
-            self.check(quotient ** -1, depth, Expression("/", q, p))
-            self.check(quotient, depth, Expression("/", p, q))
+            self.check(quotient ** -1, depth, Expression.divide(q, p))
+            self.check(quotient, depth, Expression.divide(p, q))
         else:
-            self.check(quotient, depth, Expression("/", p, q))
-            self.check(quotient ** -1, depth, Expression("/", q, p))
+            self.check(quotient, depth, Expression.divide(p, q))
+            self.check(quotient ** -1, depth, Expression.divide(q, p))
 
     def factorial_divide(self, p, q, depth):
         if p == q or not self.integer_check(p) or not self.integer_check(q):
@@ -88,18 +88,16 @@ class BaseTchisla:
         if x <= self.MAX_FACTORIAL or y <= 2 or x - y == 1 or (x - y) * (math.log2(x) + math.log2(y)) > self.MAX_DIGITS << 1:
             return
         result = reduce(operator.mul, range(x, y, -1))
-        p_factorial = Expression("factorial", p)
-        q_factorial = Expression("factorial", q)
-        self.check(self.constructor(result), depth, Expression("/", p_factorial, q_factorial))
+        p_factorial = Expression.factorial(p)
+        q_factorial = Expression.factorial(q)
+        self.check(self.constructor(result), depth, Expression.divide(p_factorial, q_factorial))
         if depth != self.max_depth and self.solutions[q][0] == 1:
-            self.check(self.constructor(result - 1), depth + 1, Expression(
-                "/",
-                Expression("-", p_factorial, q_factorial),
+            self.check(self.constructor(result - 1), depth + 1, Expression.divide(
+                Expression.subtract(p_factorial, q_factorial),
                 q_factorial
             ))
-            self.check(self.constructor(result + 1), depth + 1, Expression(
-                "/",
-                Expression("+", p_factorial, q_factorial),
+            self.check(self.constructor(result + 1), depth + 1, Expression.divide(
+                Expression.add(p_factorial, q_factorial),
                 q_factorial
             ))
 
@@ -114,7 +112,7 @@ class BaseTchisla:
     def factorial(self, x, depth):
         if int(x) <= self.MAX_FACTORIAL:
             y = self.constructor(factorial(int(x)))
-            self.check(y, depth, Expression("factorial", x))
+            self.check(y, depth, Expression.factorial(x))
 
     def binary_operation(self, p, q, depth):
         self.add(p, q, depth)

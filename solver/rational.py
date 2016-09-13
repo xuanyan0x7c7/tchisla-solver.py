@@ -26,11 +26,11 @@ class RationalTchisla(BaseTchisla):
             return
         p_digits = math.log2(max(p.numerator, p.denominator))
         q_int = q.numerator
-        exp = Expression("^", p, q), Expression("^", p, Expression("-", q))
+        exp = Expression.power(p, q), Expression.power(p, Expression.negate(q))
         while p_digits * q_int > self.MAX_DIGITS:
             if q_int & 1 == 0:
                 q_int >>= 1
-                exp = Expression("sqrt", exp[0]), Expression("sqrt", exp[1])
+                exp = Expression.sqrt(exp[0]), Expression.sqrt(exp[1])
             else:
                 return
         x = p ** q_int
@@ -41,4 +41,4 @@ class RationalTchisla(BaseTchisla):
         if is_square(x.numerator) and is_square(x.denominator):
             y = isqrt(x.numerator)
             z = isqrt(x.denominator)
-            self.check(Fraction(y, z), depth, Expression("sqrt", x))
+            self.check(Fraction(y, z), depth, Expression.sqrt(x))

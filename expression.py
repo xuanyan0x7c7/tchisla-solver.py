@@ -34,3 +34,39 @@ class Expression:
                 lambda s: Expression.str(s, spaces = spaces),
                 expression.args
             ))
+
+    @staticmethod
+    def concat(x):
+        return Expression("concat", x)
+
+    @staticmethod
+    def add(*args):
+        return Expression("+", *args)
+
+    @staticmethod
+    def subtract(x, y):
+        return Expression("-", x, y)
+
+    @staticmethod
+    def multiply(*args):
+        return Expression("*", *args)
+
+    @staticmethod
+    def divide(x, y):
+        return Expression("/", x, y)
+
+    @staticmethod
+    def power(x, y):
+        return Expression("^", x, y)
+
+    @staticmethod
+    def negate(x):
+        return Expression("-", x)
+
+    @staticmethod
+    def sqrt(x):
+        return Expression("sqrt", x)
+
+    @staticmethod
+    def factorial(x):
+        return Expression("factorial", x)

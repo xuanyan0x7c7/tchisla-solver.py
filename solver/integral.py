@@ -25,17 +25,17 @@ class IntegralTchisla(BaseTchisla):
         if p < q:
             p, q = q, p
         if p % q == 0:
-            self.check(p // q, depth, Expression("/", p, q))
+            self.check(p // q, depth, Expression.divide(p, q))
 
     def exponent(self, p, q, depth):
         if p == 1:
             return
         p_digits = math.log2(p)
-        exp = Expression("^", p, q)
+        exp = Expression.power(p, q)
         while p_digits * q > self.MAX_DIGITS:
             if q & 1 == 0:
                 q >>= 1
-                exp = Expression("sqrt", exp)
+                exp = Expression.sqrt(exp)
             else:
                 return
         self.check(p ** q, depth, exp)
@@ -43,4 +43,4 @@ class IntegralTchisla(BaseTchisla):
     def sqrt(self, x, depth):
         if is_square(x):
             y = int(isqrt(x))
-            self.check(y, depth, Expression("sqrt", x))
+            self.check(y, depth, Expression.sqrt(x))
