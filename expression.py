@@ -39,7 +39,7 @@ class Expression:
                 string = Expression.str(arg, spaces = spaces)
                 return "s" * sqrt_depth + "qrt(" + string + ")"
             elif expression.name == "factorial":
-                if Expression.type(arg) in ("number", "concat"):
+                if Expression.type(arg) in ("number", "concat", "sqrt"):
                     return string + "!"
                 else:
                     return "(" + string + ")!"
