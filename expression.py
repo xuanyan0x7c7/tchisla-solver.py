@@ -1,16 +1,65 @@
+import operator
+
 __all__ = ["Expression"]
 
-tchisla_operators = {
-    "+": {"precedence": 1, "abelian": True},
-    "-": {"precedence": 1, "abelian": False},
-    "negate": {"precedence": 2, "abelian": False},
-    "*": {"precedence": 3, "abelian": True},
-    "/": {"precedence": 3, "abelian": False},
-    "^": {"precedence": 4, "abelian": False},
-    "factorial": {"precedence": 5, "abelian": True},
-    "sqrt": {"precedence": 6, "abelian": True},
-    "number": {"precedence": 7, "abelian": False},
-    "concat": {"precedence": 7, "abelian": False}
+operators = {
+    "+": {
+        "type": "binary",
+        "precedence": 1,
+        "abelian": True,
+        "associativity": "ltr"
+    },
+    "-": {
+        "type": "binary",
+        "precedence": 1,
+        "abelian": False,
+        "associativity": "ltr"
+    },
+    "negate": {
+        "type": "unary",
+        "precedence": 2,
+        "abelian": False,
+        "string": lambda s: "-" + s
+    },
+    "*": {
+        "type": "binary",
+        "precedence": 3,
+        "abelian": True,
+        "associativity": "ltr"
+    },
+    "/": {
+        "type": "binary",
+        "precedence": 3,
+        "abelian": False,
+        "associativity": "ltr"
+    },
+    "^": {
+        "type": "binary",
+        "precedence": 4,
+        "abelian": False,
+        "associativity": "rtl"
+    },
+    "factorial": {
+        "type": "unary",
+        "precedence": 5,
+        "abelian": True,
+        "string": lambda s: s + "!"
+    },
+    "sqrt": {
+        "type": "unary",
+        "precedence": 6,
+        "abelian": True
+    },
+    "number": {
+        "type": "number",
+        "precedence": 7,
+        "abelian": False
+    },
+    "concat": {
+        "type": "number",
+        "precedence": 7,
+        "abelian": False
+    }
 }
 
 class Expression:
@@ -25,46 +74,44 @@ class Expression:
 
     @staticmethod
     def str(expression, *, spaces = False):
-        if type(expression) is not Expression:
-            return str(expression)
-        elif expression.name == "concat":
-            return str(expression.args[0])
-        elif len(expression.args) == 1:
+        expression_operator = operators[Expression.type(expression)]
+        expression_type = expression_operator["type"]
+        if expression_type == "number":
+            if expression_operator == operators["number"]:
+                return str(expression)
+            else:
+                return str(expression.args[0])
+        elif expression_type == "unary":
             arg = expression.args[0]
             string = Expression.str(arg, spaces = spaces)
-            if expression.name == "sqrt":
+            if Expression.type(expression) == "sqrt":
                 sqrt_depth = 1
                 while Expression.type(arg) == "sqrt":
                     sqrt_depth += 1
                     arg = arg.args[0]
                 string = Expression.str(arg, spaces = spaces)
                 return "s" * sqrt_depth + "qrt(" + string + ")"
-            elif expression.name == "factorial":
-                if Expression.type(arg) in ("number", "concat", "sqrt", "factorial"):
-                    return string + "!"
-                else:
-                    return "(" + string + ")!"
-            elif expression.name == "negate":
-                if Expression.type(arg) in ("+", "-"):
-                    return "-(" + string + ")"
-                else:
-                    return "-" + string
             else:
-                raise NotImplementedError
+                comparator = operator.lt if expression_operator["abelian"] else operator.le
+                if comparator(
+                    operators[Expression.type(arg)]["precedence"],
+                    expression_operator["precedence"]
+                ):
+                    string = "(" + string + ")"
+                return expression_operator["string"](string)
         else:
             delimiter = " " + expression.name + " " if spaces else expression.name
-            op2 = tchisla_operators[expression.name]
             def mapping(arg):
                 index, arg = arg
                 string = Expression.str(arg, spaces = spaces)
-                op1 = tchisla_operators[Expression.type(arg)]
-                need_brackets = op1["precedence"] < op2["precedence"]
-                if index > 0 and op1["precedence"] == op2["precedence"] and not op2["abelian"]:
-                    need_brackets = True
-                if need_brackets:
-                    return "(" + string + ")"
-                else:
-                    return string
+                op = operators[Expression.type(arg)]
+                precedence_difference = op["precedence"] - expression_operator["precedence"]
+                need_brackets = precedence_difference < 0 or (
+                    precedence_difference == 0
+                    and not expression_operator["abelian"]
+                    and (expression_operator["associativity"] == "ltr") ^ (index == 0)
+                )
+                return "(" + string + ")" if need_brackets else string
             return delimiter.join(map(mapping, enumerate(expression.args)))
 
     @staticmethod
