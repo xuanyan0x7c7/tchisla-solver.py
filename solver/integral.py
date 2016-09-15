@@ -21,13 +21,13 @@ class IntegralTchisla(BaseTchisla):
     def integer_check(self, x):
         return True
 
-    def divide(self, p, q, depth):
+    def divide(self, p, q, digits):
         if p < q:
             p, q = q, p
         if p % q == 0:
-            self.check(p // q, depth, Expression.divide(p, q))
+            self.check(p // q, digits, Expression.divide(p, q))
 
-    def exponent(self, p, q, depth):
+    def exponent(self, p, q, digits):
         if p == 1:
             return
         p_digits = math.log2(p)
@@ -38,9 +38,9 @@ class IntegralTchisla(BaseTchisla):
                 exp = Expression.sqrt(exp)
             else:
                 return
-        self.check(p ** q, depth, exp)
+        self.check(p ** q, digits, exp)
 
-    def sqrt(self, x, depth):
+    def sqrt(self, x, digits):
         if is_square(x):
             y = int(isqrt(x))
-            self.check(y, depth, Expression.sqrt(x))
+            self.check(y, digits, Expression.sqrt(x))

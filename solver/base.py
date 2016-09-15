@@ -25,9 +25,9 @@ class BaseTchisla:
         self.visited = [None, []]
         self.number_printed = set()
 
-    def insert(self, x, depth, expression):
-        self.solutions[x] = depth, expression
-        self.visited[depth].append(x)
+    def insert(self, x, digits, expression):
+        self.solutions[x] = digits, expression
+        self.visited[digits].append(x)
         if x == self.target:
             raise SolutionFoundError(str(self.target) + "#" + str(self.n))
 
@@ -39,45 +39,45 @@ class BaseTchisla:
     def integer_check(self, x):
         pass
 
-    def check(self, x, depth, expression, *, need_sqrt = True):
+    def check(self, x, digits, expression, *, need_sqrt = True):
         if not self.range_check(x) or x in self.solutions:
             return
-        self.insert(x, depth, expression)
+        self.insert(x, digits, expression)
         if need_sqrt:
-            self.sqrt(x, depth)
+            self.sqrt(x, digits)
         if self.integer_check(x):
-            self.factorial(x, depth)
+            self.factorial(x, digits)
 
-    def concat(self, depth):
-        if depth <= self.MAX_CONCAT:
-            x = self.constructor((10 ** depth - 1) // 9 * self.n)
-            self.check(x, depth, Expression.concat(x))
+    def concat(self, digits):
+        if digits <= self.MAX_CONCAT:
+            x = self.constructor((10 ** digits - 1) // 9 * self.n)
+            self.check(x, digits, Expression.concat(x))
 
-    def add(self, p, q, depth):
-        self.check(p + q, depth, Expression.add(p, q))
+    def add(self, p, q, digits):
+        self.check(p + q, digits, Expression.add(p, q))
 
-    def subtract(self, p, q, depth):
+    def subtract(self, p, q, digits):
         if p == q:
             return
         result = p - q
         if result < 0:
-            self.check(-result, depth, Expression.subtract(q, p))
+            self.check(-result, digits, Expression.subtract(q, p))
         else:
-            self.check(result, depth, Expression.subtract(p, q))
+            self.check(result, digits, Expression.subtract(p, q))
 
-    def multiply(self, p, q, depth):
-        self.check(p * q, depth, Expression.multiply(p, q))
+    def multiply(self, p, q, digits):
+        self.check(p * q, digits, Expression.multiply(p, q))
 
-    def divide(self, p, q, depth):
+    def divide(self, p, q, digits):
         quotient = p / q
         if quotient < 1:
-            self.check(quotient ** -1, depth, Expression.divide(q, p))
-            self.check(quotient, depth, Expression.divide(p, q))
+            self.check(quotient ** -1, digits, Expression.divide(q, p))
+            self.check(quotient, digits, Expression.divide(p, q))
         else:
-            self.check(quotient, depth, Expression.divide(p, q))
-            self.check(quotient ** -1, depth, Expression.divide(q, p))
+            self.check(quotient, digits, Expression.divide(p, q))
+            self.check(quotient ** -1, digits, Expression.divide(q, p))
 
-    def factorial_divide(self, p, q, depth):
+    def factorial_divide(self, p, q, digits):
         if p == q or not self.integer_check(p) or not self.integer_check(q):
             return
         x = int(p)
@@ -90,73 +90,72 @@ class BaseTchisla:
         result = reduce(operator.mul, range(x, y, -1))
         p_factorial = Expression.factorial(p)
         q_factorial = Expression.factorial(q)
-        self.check(self.constructor(result), depth, Expression.divide(p_factorial, q_factorial))
-        if depth != self.max_depth and self.solutions[q][0] == 1:
-            self.check(self.constructor(result - 1), depth + 1, Expression.divide(
+        self.check(self.constructor(result), digits, Expression.divide(p_factorial, q_factorial))
+        if digits != self.max_depth and self.solutions[q][0] == 1:
+            self.check(self.constructor(result - 1), digits + 1, Expression.divide(
                 Expression.subtract(p_factorial, q_factorial),
                 q_factorial
             ))
-            self.check(self.constructor(result + 1), depth + 1, Expression.divide(
+            self.check(self.constructor(result + 1), digits + 1, Expression.divide(
                 Expression.add(p_factorial, q_factorial),
                 q_factorial
             ))
 
     @abstractmethod
-    def exponent(self, p, q, depth):
+    def exponent(self, p, q, digits):
         pass
 
     @abstractmethod
-    def sqrt(self, x, depth):
+    def sqrt(self, x, digits):
         pass
 
-    def factorial(self, x, depth):
+    def factorial(self, x, digits):
         if int(x) <= self.MAX_FACTORIAL:
             y = self.constructor(factorial(int(x)))
-            self.check(y, depth, Expression.factorial(x))
+            self.check(y, digits, Expression.factorial(x))
 
-    def binary_operation(self, p, q, depth):
-        self.add(p, q, depth)
-        self.subtract(p, q, depth)
-        self.multiply(p, q, depth)
-        self.divide(p, q, depth)
-        self.exponent(p, q, depth)
-        self.exponent(q, p, depth)
+    def binary_operation(self, p, q, digits):
+        self.add(p, q, digits)
+        self.subtract(p, q, digits)
+        self.multiply(p, q, digits)
+        self.divide(p, q, digits)
+        self.exponent(p, q, digits)
+        self.exponent(q, p, digits)
 
-    def search(self, depth):
-        if depth not in self.visited:
+    def search(self, digits):
+        if digits not in self.visited:
             self.visited.append([])
-        self.concat(depth)
-        for d1 in range(1, (depth + 1) >> 1):
-            d2 = depth - d1
+        self.concat(digits)
+        for d1 in range(1, (digits + 1) >> 1):
+            d2 = digits - d1
             for p, q in product(self.visited[d1], self.visited[d2]):
-                self.binary_operation(p, q, depth)
-        if depth & 1 == 0:
-            for p, q in combinations_with_replacement(self.visited[depth >> 1], 2):
-                self.binary_operation(p, q, depth)
-        for d1 in range(1, (depth + 1) >> 1):
-            d2 = depth - d1
+                self.binary_operation(p, q, digits)
+        if digits & 1 == 0:
+            for p, q in combinations_with_replacement(self.visited[digits >> 1], 2):
+                self.binary_operation(p, q, digits)
+        for d1 in range(1, (digits + 1) >> 1):
+            d2 = digits - d1
             for p, q in product(self.visited[d1], self.visited[d2]):
-                self.factorial_divide(p, q, depth)
-        if depth & 1 == 0:
-            for p, q in combinations_with_replacement(self.visited[depth >> 1], 2):
-                self.factorial_divide(p, q, depth)
+                self.factorial_divide(p, q, digits)
+        if digits & 1 == 0:
+            for p, q in combinations_with_replacement(self.visited[digits >> 1], 2):
+                self.factorial_divide(p, q, digits)
 
     def solve(self, *, max_depth = None):
         self.max_depth = max_depth
-        for depth in count(1):
-            if depth - 1 == max_depth:
+        for digits in count(1):
+            if digits - 1 == max_depth:
                 return
             if global_config["verbose"]:
-                print(depth)
+                print(digits)
             try:
-                self.search(depth)
+                self.search(digits)
             except SolutionFoundError:
-                return depth
-
+                return digits
 
     def printer(self, n):
-        depth, expression = self.solutions[n]
-        string = str(depth) + ": " + str(n)
+        digits, expression = self.solutions[n]
+        string = str(digits) + ": " + str(n)
         if expression.name == "concat":
             return string
         else:
@@ -171,7 +170,7 @@ class BaseTchisla:
 
         if n in self.number_printed or n not in self.solutions:
             return []
-        depth, expression = self.solutions[n]
+        digits, expression = self.solutions[n]
         if expression.name == "concat" and not force_print:
             return []
         solution_list = [self.printer(n)]
