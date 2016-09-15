@@ -3,13 +3,14 @@ __all__ = ["Expression"]
 tchisla_operators = {
     "+": {"precedence": 1, "abelian": True},
     "-": {"precedence": 1, "abelian": False},
-    "*": {"precedence": 2, "abelian": True},
-    "/": {"precedence": 2, "abelian": False},
-    "^": {"precedence": 3, "abelian": False},
-    "factorial": {"precedence": 4, "abelian": False},
-    "sqrt": {"precedence": 5, "abelian": True},
-    "number": {"precedence": 6, "abelian": False},
-    "concat": {"precedence": 6, "abelian": False}
+    "negate": {"precedence": 2, "abelian": False},
+    "*": {"precedence": 3, "abelian": True},
+    "/": {"precedence": 3, "abelian": False},
+    "^": {"precedence": 4, "abelian": False},
+    "factorial": {"precedence": 5, "abelian": False},
+    "sqrt": {"precedence": 6, "abelian": True},
+    "number": {"precedence": 7, "abelian": False},
+    "concat": {"precedence": 7, "abelian": False}
 }
 
 class Expression:
@@ -43,7 +44,7 @@ class Expression:
                     return string + "!"
                 else:
                     return "(" + string + ")!"
-            elif expression.name == "-":
+            elif expression.name == "negate":
                 if Expression.type(arg) in ("+", "-"):
                     return "-(" + string + ")"
                 else:
@@ -96,7 +97,7 @@ class Expression:
 
     @staticmethod
     def negate(x):
-        return Expression("-", x)
+        return Expression("negate", x)
 
     @staticmethod
     def sqrt(x):
