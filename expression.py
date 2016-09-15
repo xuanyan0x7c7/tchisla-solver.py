@@ -1,5 +1,17 @@
 __all__ = ["Expression"]
 
+tchisla_operators = {
+    "+": {"precedence": 1, "abelian": True},
+    "-": {"precedence": 1, "abelian": False},
+    "*": {"precedence": 2, "abelian": True},
+    "/": {"precedence": 2, "abelian": False},
+    "^": {"precedence": 3, "abelian": False},
+    "factorial": {"precedence": 4, "abelian": False},
+    "sqrt": {"precedence": 5, "abelian": True},
+    "number": {"precedence": 6, "abelian": False},
+    "concat": {"precedence": 6, "abelian": False}
+}
+
 class Expression:
     __slots__ = ("name", "args")
 
@@ -8,19 +20,88 @@ class Expression:
         self.args = tuple(args)
 
     def __str__(self):
-        if self.name == "concat":
-            return str(self.args[0])
-        elif len(self.args) == 1:
-            if self.name == "sqrt":
+        return Expression.str(self)
+
+    @staticmethod
+    def str(expression, *, spaces = False):
+        if type(expression) is not Expression:
+            return str(expression)
+        elif expression.name == "concat":
+            return str(expression.args[0])
+        elif len(expression.args) == 1:
+            arg = expression.args[0]
+            string = Expression.str(arg, spaces = spaces)
+            if expression.name == "sqrt":
                 sqrt_depth = 1
-                arg = self.args[0]
-                while type(arg) is Expression and arg.name == "sqrt":
+                while Expression.type(arg) == "sqrt":
                     sqrt_depth += 1
                     arg = arg.args[0]
-                return "s" * sqrt_depth + "qrt(" + str(arg) + ")"
-            elif self.name == "factorial":
-                return str(self.args[0]) + "!"
-            elif self.name == "-":
-                return "-" + str(self.args[0])
+                string = Expression.str(arg, spaces = spaces)
+                return "s" * sqrt_depth + "qrt(" + string + ")"
+            elif expression.name == "factorial":
+                if Expression.type(arg) in ("number", "concat"):
+                    return string + "!"
+                else:
+                    return "(" + string + ")!"
+            elif expression.name == "-":
+                if Expression.type(arg) in ("+", "-"):
+                    return "-(" + string + ")"
+                else:
+                    return "-" + string
+            else:
+                raise NotImplementedError
         else:
-            return (" " + self.name + " ").join(map(str, self.args))
+            delimiter = " " + expression.name + " " if spaces else expression.name
+            op2 = tchisla_operators[expression.name]
+            def mapping(arg):
+                index, arg = arg
+                string = Expression.str(arg, spaces = spaces)
+                op1 = tchisla_operators[Expression.type(arg)]
+                need_brackets = op1["precedence"] < op2["precedence"]
+                if index > 0 and op1["precedence"] == op2["precedence"] and not op2["abelian"]:
+                    need_brackets = True
+                if need_brackets:
+                    return "(" + string + ")"
+                else:
+                    return string
+            return delimiter.join(map(mapping, enumerate(expression.args)))
+
+    @staticmethod
+    def type(expression):
+        return expression.name if type(expression) is Expression else "number"
+
+    @staticmethod
+    def concat(x):
+        return Expression("concat", x)
+
+    @staticmethod
+    def add(*args):
+        return Expression("+", *args)
+
+    @staticmethod
+    def subtract(x, y):
+        return Expression("-", x, y)
+
+    @staticmethod
+    def multiply(*args):
+        return Expression("*", *args)
+
+    @staticmethod
+    def divide(x, y):
+        return Expression("/", x, y)
+
+    @staticmethod
+    def power(x, y):
+        return Expression("^", x, y)
+
+    @staticmethod
+    def negate(x):
+        return Expression("-", x)
+
+    @staticmethod
+    def sqrt(x):
+        return Expression("sqrt", x)
+
+    @staticmethod
+    def factorial(x):
+        return Expression("factorial", x)

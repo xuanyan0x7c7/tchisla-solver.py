@@ -27,7 +27,7 @@ class QuadraticTchisla(BaseTchisla):
     def add(self, p, q, depth):
         result = p + q
         if result is not None:
-            self.check(result, depth, Expression("+", p, q))
+            self.check(result, depth, Expression.add(p, q))
 
     def subtract(self, p, q, depth):
         if p == q:
@@ -37,32 +37,32 @@ class QuadraticTchisla(BaseTchisla):
             if result.rational_part < 0:
                 result = -result
                 p, q = q, p
-            self.check(result, depth, Expression("-", p, q))
+            self.check(result, depth, Expression.subtract(p, q))
 
     def multiply(self, p, q, depth):
-        self.check(p * q, depth, Expression("*", p, q))
+        self.check(p * q, depth, Expression.multiply(p, q))
 
     def divide(self, p, q, depth):
         quotient = p / q
-        self.check(quotient, depth, Expression("/", p, q))
-        self.check(quotient ** -1, depth, Expression("/", q, p))
+        self.check(quotient, depth, Expression.divide(p, q))
+        self.check(quotient ** -1, depth, Expression.divide(q, p))
 
     def exponent(self, p, q, depth):
         if not self.integer_check(q) or p == 1:
             return
         base = math.log2(max(p.rational_part.numerator, p.rational_part.denominator))
-        exp = Expression("^", p, q), Expression("^", p, Expression("-", q))
+        exp = Expression.power(p, q), Expression.power(p, Expression.negate(q))
         q_max = q.rational_part.numerator
         while base * q_max > self.MAX_DIGITS << p.quadratic_power:
             if q_max & 1 == 0:
                 q_max >>= 1
-                exp = Expression("sqrt", exp[0]), Expression("sqrt", exp[1])
+                exp = Expression.sqrt(exp[0]), Expression.sqrt(exp[1])
             else:
                 return
         q_min = q_max
         while q_min & 1 == 0:
             q_min >>= 1
-            exp = Expression("sqrt", exp[0]), Expression("sqrt", exp[1])
+            exp = Expression.sqrt(exp[0]), Expression.sqrt(exp[1])
         q = q_min
         x = p ** q
         while q <= q_max:
@@ -79,4 +79,4 @@ class QuadraticTchisla(BaseTchisla):
         if x.quadratic_power < self.MAX_QUADRATIC_POWER:
             y = Quadratic.sqrt(x)
             if y is not None:
-                self.check(y, depth, Expression("sqrt", x))
+                self.check(y, depth, Expression.sqrt(x))
