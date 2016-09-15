@@ -7,7 +7,7 @@ tchisla_operators = {
     "*": {"precedence": 3, "abelian": True},
     "/": {"precedence": 3, "abelian": False},
     "^": {"precedence": 4, "abelian": False},
-    "factorial": {"precedence": 5, "abelian": False},
+    "factorial": {"precedence": 5, "abelian": True},
     "sqrt": {"precedence": 6, "abelian": True},
     "number": {"precedence": 7, "abelian": False},
     "concat": {"precedence": 7, "abelian": False}
@@ -40,7 +40,7 @@ class Expression:
                 string = Expression.str(arg, spaces = spaces)
                 return "s" * sqrt_depth + "qrt(" + string + ")"
             elif expression.name == "factorial":
-                if Expression.type(arg) in ("number", "concat", "sqrt"):
+                if Expression.type(arg) in ("number", "concat", "sqrt", "factorial"):
                     return string + "!"
                 else:
                     return "(" + string + ")!"
