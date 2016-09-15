@@ -1,5 +1,17 @@
 __all__ = ["Expression"]
 
+tchisla_operators = {
+    "+": {"precedence": 1, "abelian": True},
+    "-": {"precedence": 1, "abelian": False},
+    "*": {"precedence": 2, "abelian": True},
+    "/": {"precedence": 2, "abelian": False},
+    "^": {"precedence": 3, "abelian": False},
+    "factorial": {"precedence": 4, "abelian": False},
+    "sqrt": {"precedence": 5, "abelian": True},
+    "number": {"precedence": 6, "abelian": False},
+    "concat": {"precedence": 6, "abelian": False}
+}
+
 class Expression:
     __slots__ = ("name", "args")
 
@@ -17,23 +29,46 @@ class Expression:
         elif expression.name == "concat":
             return str(expression.args[0])
         elif len(expression.args) == 1:
+            arg = expression.args[0]
+            string = Expression.str(arg, spaces = spaces)
             if expression.name == "sqrt":
                 sqrt_depth = 1
-                arg = expression.args[0]
-                while type(arg) is Expression and arg.name == "sqrt":
+                while Expression.type(arg) == "sqrt":
                     sqrt_depth += 1
                     arg = arg.args[0]
-                return "s" * sqrt_depth + "qrt(" + Expression.str(arg, spaces = spaces) + ")"
+                string = Expression.str(arg, spaces = spaces)
+                return "s" * sqrt_depth + "qrt(" + string + ")"
             elif expression.name == "factorial":
-                return Expression.str(expression.args[0], spaces = spaces) + "!"
+                if Expression.type(arg) in ("number", "concat"):
+                    return string + "!"
+                else:
+                    return "(" + string + ")!"
             elif expression.name == "-":
-                return "-" + Expression.str(expression.args[0], spaces = spaces)
+                if Expression.type(arg) in ("+", "-"):
+                    return "-(" + string + ")"
+                else:
+                    return "-" + string
+            else:
+                raise NotImplementedError
         else:
             delimiter = " " + expression.name + " " if spaces else expression.name
-            return delimiter.join(map(
-                lambda s: Expression.str(s, spaces = spaces),
-                expression.args
-            ))
+            op2 = tchisla_operators[expression.name]
+            def mapping(arg):
+                index, arg = arg
+                string = Expression.str(arg, spaces = spaces)
+                op1 = tchisla_operators[Expression.type(arg)]
+                need_brackets = op1["precedence"] < op2["precedence"]
+                if index > 0 and op1["precedence"] == op2["precedence"] and not op2["abelian"]:
+                    need_brackets = True
+                if need_brackets:
+                    return "(" + string + ")"
+                else:
+                    return string
+            return delimiter.join(map(mapping, enumerate(expression.args)))
+
+    @staticmethod
+    def type(expression):
+        return expression.name if type(expression) is Expression else "number"
 
     @staticmethod
     def concat(x):

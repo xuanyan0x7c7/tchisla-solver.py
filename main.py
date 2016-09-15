@@ -55,6 +55,7 @@ def general_solver(n, target, options):
         solution = tchisla.solution_prettyprint(current_target, force_print=True)
         for string in solution:
             print(string)
+        print(current_target, "=", tchisla.full_expression(tchisla.target))
         if global_config["verbose"]:
             print('\007', end='')
     if depth and options.check_wr:

@@ -179,3 +179,12 @@ class BaseTchisla:
         for x in requirements(expression):
             solution_list += self.solution_prettyprint(x)
         return solution_list
+
+    def full_expression(self, n):
+        if type(n) is Expression:
+            return Expression(n.name, *map(self.full_expression, n.args))
+        _, expression = self.solutions[n]
+        if expression.name == "concat":
+            return n
+        else:
+            return Expression(expression.name, *map(self.full_expression, expression.args))
