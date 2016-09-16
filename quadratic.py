@@ -1,7 +1,6 @@
 import sys
 import numbers
 import operator
-from itertools import starmap
 from functools import reduce
 from gmpy2 import mpz, mpq as Fraction, is_square, isqrt
 
@@ -36,7 +35,7 @@ class Quadratic(numbers.Real):
 
     def __str__(self):
         if self.quadratic_part:
-            q = reduce(operator.mul, starmap(operator.pow, zip(primes, self.quadratic_part)))
+            q = reduce(operator.mul, map(operator.pow, primes, self.quadratic_part))
             quadratic_part_string = "s" * self.quadratic_power + "qrt(" + str(q) + ")"
             if self.rational_part == 1:
                 return quadratic_part_string

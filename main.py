@@ -55,15 +55,15 @@ def general_solver(n, target, options):
         solution = tchisla.solution_prettyprint(current_target, force_print=True)
         for string in solution:
             print(string)
-        print(current_target, "=", tchisla.full_expression(tchisla.target))
+        print(current_target, "=", tchisla.full_expression(tchisla.target), flush = True)
         if global_config["verbose"]:
-            print('\007', end='')
+            print('\007', end='', flush = True)
     if depth and options.check_wr:
         if not record or record > depth:
-            print('New WR Found!')
+            print('New WR Found!', flush = True)
 
 def solve(problem, options):
-    print(problem[0], '#', problem[1])
+    print(problem[0], '#', problem[1], flush = True)
     general_solver(problem[1], problem[0], options)
 
 def parse_problems(problems):

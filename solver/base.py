@@ -29,7 +29,7 @@ class BaseTchisla:
         self.solutions[x] = digits, expression
         self.visited[digits].append(x)
         if x == self.target:
-            raise SolutionFoundError(str(self.target) + "#" + str(self.n))
+            raise SolutionFoundError((x, digits))
 
     @abstractmethod
     def range_check(self, x):
@@ -85,7 +85,9 @@ class BaseTchisla:
         if x < y:
             x, y = y, x
             p, q = q, p
-        if x <= self.MAX_FACTORIAL or y <= 2 or x - y == 1 or (x - y) * (math.log2(x) + math.log2(y)) > self.MAX_DIGITS << 1:
+        if x <= self.MAX_FACTORIAL or y <= 2 or x - y == 1 or (
+            (x - y) * (math.log2(x) + math.log2(y)) > self.MAX_DIGITS << 1
+        ):
             return
         result = reduce(operator.mul, range(x, y, -1))
         p_factorial = Expression.factorial(p)
@@ -122,24 +124,21 @@ class BaseTchisla:
         self.exponent(p, q, digits)
         self.exponent(q, p, digits)
 
+    def binary_generator(self, digits):
+        for d1 in range(1, (digits + 1) >> 1):
+            d2 = digits - d1
+            yield from product(self.visited[d1], self.visited[d2])
+        if digits & 1 == 0:
+            yield from combinations_with_replacement(self.visited[digits >> 1], 2)
+
     def search(self, digits):
         if digits not in self.visited:
             self.visited.append([])
         self.concat(digits)
-        for d1 in range(1, (digits + 1) >> 1):
-            d2 = digits - d1
-            for p, q in product(self.visited[d1], self.visited[d2]):
-                self.binary_operation(p, q, digits)
-        if digits & 1 == 0:
-            for p, q in combinations_with_replacement(self.visited[digits >> 1], 2):
-                self.binary_operation(p, q, digits)
-        for d1 in range(1, (digits + 1) >> 1):
-            d2 = digits - d1
-            for p, q in product(self.visited[d1], self.visited[d2]):
-                self.factorial_divide(p, q, digits)
-        if digits & 1 == 0:
-            for p, q in combinations_with_replacement(self.visited[digits >> 1], 2):
-                self.factorial_divide(p, q, digits)
+        for p, q in self.binary_generator(digits):
+            self.binary_operation(p, q, digits)
+        for p, q in self.binary_generator(digits):
+            self.factorial_divide(p, q, digits)
 
     def solve(self, *, max_depth = None):
         self.max_depth = max_depth
@@ -150,8 +149,8 @@ class BaseTchisla:
                 print(digits)
             try:
                 self.search(digits)
-            except SolutionFoundError:
-                return digits
+            except SolutionFoundError as solution:
+                return solution.message[1]
 
     def printer(self, n):
         digits, expression = self.solutions[n]
