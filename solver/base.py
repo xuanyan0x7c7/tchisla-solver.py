@@ -29,7 +29,7 @@ class BaseTchisla:
         self.solutions[x] = digits, expression
         self.visited[digits].append(x)
         if x == self.target:
-            raise SolutionFoundError(str(self.target) + "#" + str(self.n))
+            raise SolutionFoundError((x, digits))
 
     @abstractmethod
     def range_check(self, x):
@@ -149,8 +149,8 @@ class BaseTchisla:
                 print(digits)
             try:
                 self.search(digits)
-            except SolutionFoundError:
-                return digits
+            except SolutionFoundError as solution:
+                return solution.message[1]
 
     def printer(self, n):
         digits, expression = self.solutions[n]
