@@ -93,13 +93,24 @@ class BaseTchisla:
         p_factorial = Expression.factorial(p)
         q_factorial = Expression.factorial(q)
         self.check(self.constructor(result), digits, Expression.divide(p_factorial, q_factorial))
-        if digits != self.max_depth and self.solutions[q][0] == 1:
+        if digits == self.max_depth:
+            return
+        if self.solutions[q][0] == 1:
             self.check(self.constructor(result - 1), digits + 1, Expression.divide(
                 Expression.subtract(p_factorial, q_factorial),
                 q_factorial
             ))
             self.check(self.constructor(result + 1), digits + 1, Expression.divide(
                 Expression.add(p_factorial, q_factorial),
+                q_factorial
+            ))
+            self.check(self.constructor(result >> 1), digits + 1, Expression.divide(
+                p_factorial,
+                Expression.add(q_factorial, q_factorial)
+            ))
+        if self.solutions[p][0] == 1:
+            self.check(self.constructor(result << 1), digits + 1, Expression.divide(
+                Expression.add(p_factorial, p_factorial),
                 q_factorial
             ))
 
