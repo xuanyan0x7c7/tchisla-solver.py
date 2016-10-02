@@ -13,8 +13,7 @@ class SolutionFoundError(Exception):
     def __init__(self, message):
         self.message = message
 
-class BaseTchisla:
-    __metaclass__ = ABCMeta
+class BaseTchisla(metaclass=ABCMeta):
     __slots__ = ("n", "target", "solutions", "max_depth", "visited", "number_printed", "specials", "limits")
 
     def __init__(self, n, target):
