@@ -83,7 +83,7 @@ def parse_problems(problems):
         for target in targets:
             for digit in digits:
                 problem_list.add((target, digit))
-    problem_list = sorted(problem_list)
+    problem_list = sorted(problem_list, key=lambda x: (x[1], x[0]))
 
     return problem_list
 
