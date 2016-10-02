@@ -43,8 +43,9 @@ class BaseTchisla:
         if x == self.target:
             raise SolutionFoundError((x, digits))
 
+    @staticmethod
     @abstractmethod
-    def name(self):
+    def name():
         pass
 
     @abstractmethod
