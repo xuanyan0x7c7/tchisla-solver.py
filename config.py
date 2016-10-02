@@ -39,6 +39,12 @@ specials = {
 	"integral": {},
 	"rational": {},
 	"quadratic": {
+		4: {
+			6: [
+				(Quadratic(1401), Expression.divide(Expression.subtract(Expression.multiply(Expression.sqrt(4), Expression.sqrt(Expression.add(Expression.factorial(24), Expression.factorial(28)))), Expression.sqrt(Expression.factorial(24))), Expression.sqrt(Expression.factorial(24)))),
+				(Quadratic(1403), Expression.divide(Expression.add(Expression.multiply(Expression.sqrt(4), Expression.sqrt(Expression.add(Expression.factorial(24), Expression.factorial(28)))), Expression.sqrt(Expression.factorial(24))), Expression.sqrt(Expression.factorial(24))))
+			]
+		},
 		7: {
 			3: [
 				# sqrt(14!+7!)
