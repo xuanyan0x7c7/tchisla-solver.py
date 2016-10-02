@@ -3,7 +3,7 @@ import operator
 from itertools import count, product, combinations_with_replacement, chain
 from functools import reduce
 from abc import ABCMeta, abstractmethod
-from config import global_config, specials
+from config import global_config, specials, limits
 from gmpy2 import mpq as Fraction, fac as factorial
 from expression import Expression
 
@@ -15,7 +15,7 @@ class SolutionFoundError(Exception):
 
 class BaseTchisla:
     __metaclass__ = ABCMeta
-    __slots__ = ("n", "target", "solutions", "max_depth", "visited", "number_printed", "specials")
+    __slots__ = ("n", "target", "solutions", "max_depth", "visited", "number_printed", "specials", "limits")
 
     def __init__(self, n, target):
         self.n = n
@@ -28,6 +28,14 @@ class BaseTchisla:
         self.specials = {}
         if n in specials[self.name()]:
             self.specials = specials[self.name()][n]
+
+        self.limits = limits[self.name()]["default"]
+        if n in limits[self.name()]:
+            self.limits.update(limits[self.name()][n])
+        self.MAX = self.limits["max"]
+        self.MAX_DIGITS = self.limits["max_digits"]
+        self.MAX_CONCAT = self.limits["max_concat"]
+        self.MAX_FACTORIAL = self.limits["max_factorial"]
 
     def insert(self, x, digits, expression):
         self.solutions[x] = digits, expression

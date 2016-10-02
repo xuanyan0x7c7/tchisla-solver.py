@@ -7,10 +7,6 @@ __all__ = ["IntegralTchisla"]
 
 class IntegralTchisla(BaseTchisla):
     constructor = int
-    MAX = 1 << 64
-    MAX_DIGITS = 64
-    MAX_CONCAT = 20
-    MAX_FACTORIAL = 20
 
     def __init__(self, n, target):
         super().__init__(n, target)

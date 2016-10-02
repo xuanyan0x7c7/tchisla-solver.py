@@ -8,14 +8,10 @@ __all__ = ["QuadraticTchisla"]
 
 class QuadraticTchisla(BaseTchisla):
     constructor = Quadratic
-    MAX = 1 << 16
-    MAX_DIGITS = 16
-    MAX_CONCAT = 5
-    MAX_FACTORIAL = 8
-    MAX_QUADRATIC_POWER = 3
 
     def __init__(self, n, target):
         super().__init__(n, target)
+        self.MAX_QUADRATIC_POWER = self.limits["max_quadratic_power"]
 
     def name(self):
         return "quadratic"

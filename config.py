@@ -7,6 +7,34 @@ global_config = {
 	"verbose": False
 }
 
+limits = {
+	"integral": {
+		"default": {
+			"max": 1 << 64,
+			"max_digits": 64,
+			"max_concat": 20,
+			"max_factorial": 20
+		}
+	},
+	"rational": {
+		"default": {
+			"max": 1 << 32,
+			"max_digits": 32,
+			"max_concat": 20,
+			"max_factorial": 12
+		}
+	},
+	"quadratic": {
+		"default": {
+			"max": 1 << 16,
+			"max_digits": 16,
+			"max_concat": 5,
+			"max_factorial": 8,
+			"max_quadratic_power": 1,
+		}
+	}
+}
+
 specials = {
 	"integral": {},
 	"rational": {},
