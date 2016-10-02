@@ -16,9 +16,9 @@ class SolutionFoundError(Exception):
 class BaseTchisla(metaclass=ABCMeta):
     __slots__ = ("n", "target", "solutions", "max_depth", "visited", "number_printed", "specials", "limits")
 
-    def __init__(self, n, target):
+    def __init__(self, n):
         self.n = n
-        self.target = self.constructor(target)
+        self.target = None
         self.solutions = {}
         self.max_depth = None
         self.visited = [None, []]
@@ -170,7 +170,8 @@ class BaseTchisla(metaclass=ABCMeta):
         for p, q in self.binary_generator(digits):
             self.factorial_divide(p, q, digits)
 
-    def solve(self, *, max_depth = None):
+    def solve(self, target, *, max_depth = None):
+        self.target = self.constructor(target)
         self.max_depth = max_depth
         for digits in count(1):
             if digits - 1 == max_depth:

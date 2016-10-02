@@ -44,9 +44,9 @@ def general_solver(n, target, options):
         if not solver["regex"].match(str(target)):
             continue
         current_target = solver["constructor"](target)
-        tchisla = solver["solver"](n, current_target)
+        tchisla = solver["solver"](n)
         max_depth = depth
-        depth = tchisla.solve(max_depth = max_depth and max_depth - 1)
+        depth = tchisla.solve(current_target, max_depth = max_depth and max_depth - 1)
         if depth is None:
             depth = max_depth
             continue

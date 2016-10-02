@@ -8,8 +8,8 @@ __all__ = ["RationalTchisla"]
 class RationalTchisla(BaseTchisla):
     constructor = Fraction
 
-    def __init__(self, n, target):
-        super().__init__(n, target)
+    def __init__(self, n):
+        super().__init__(n)
 
     @staticmethod
     def name():
