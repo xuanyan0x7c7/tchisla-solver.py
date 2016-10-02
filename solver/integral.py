@@ -15,6 +15,9 @@ class IntegralTchisla(BaseTchisla):
     def __init__(self, n, target):
         super().__init__(n, target)
 
+    def name(self):
+        return "integral"
+
     def range_check(self, x):
         return x <= self.MAX
 

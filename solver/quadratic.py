@@ -17,6 +17,9 @@ class QuadraticTchisla(BaseTchisla):
     def __init__(self, n, target):
         super().__init__(n, target)
 
+    def name(self):
+        return "quadratic"
+
     def range_check(self, x):
         x = x.rational_part
         return x.numerator <= self.MAX and x.denominator <= self.MAX

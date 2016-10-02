@@ -15,6 +15,9 @@ class RationalTchisla(BaseTchisla):
     def __init__(self, n, target):
         super().__init__(n, target)
 
+    def name(self):
+        return "rational"
+
     def range_check(self, x):
         return x.numerator <= self.MAX and x.denominator <= self.MAX
 

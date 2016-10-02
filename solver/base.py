@@ -3,7 +3,7 @@ import operator
 from itertools import count, product, combinations_with_replacement, chain
 from functools import reduce
 from abc import ABCMeta, abstractmethod
-from config import global_config
+from config import global_config, specials
 from gmpy2 import mpq as Fraction, fac as factorial
 from expression import Expression
 
@@ -15,7 +15,7 @@ class SolutionFoundError(Exception):
 
 class BaseTchisla:
     __metaclass__ = ABCMeta
-    __slots__ = ("n", "target", "solutions", "max_depth", "visited", "number_printed")
+    __slots__ = ("n", "target", "solutions", "max_depth", "visited", "number_printed", "specials")
 
     def __init__(self, n, target):
         self.n = n
@@ -25,11 +25,19 @@ class BaseTchisla:
         self.visited = [None, []]
         self.number_printed = set()
 
+        self.specials = {}
+        if n in specials[self.name()]:
+            self.specials = specials[self.name()][n]
+
     def insert(self, x, digits, expression):
         self.solutions[x] = digits, expression
         self.visited[digits].append(x)
         if x == self.target:
             raise SolutionFoundError((x, digits))
+
+    @abstractmethod
+    def name(self):
+        pass
 
     @abstractmethod
     def range_check(self, x):
@@ -145,6 +153,9 @@ class BaseTchisla:
     def search(self, digits):
         if digits not in self.visited:
             self.visited.append([])
+            if digits in self.specials:
+                for (x, expression) in self.specials[digits]:
+                    self.insert(x, digits, expression)
         self.concat(digits)
         for p, q in self.binary_generator(digits):
             self.binary_operation(p, q, digits)
