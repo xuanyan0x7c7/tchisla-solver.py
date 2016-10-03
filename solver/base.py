@@ -177,16 +177,27 @@ class BaseTchisla(metaclass=ABCMeta):
             yield from combinations_with_replacement(self.visited[digits >> 1], 2)
 
     def search(self, digits):
+        # if already found, raise it
         if self.target in self.solutions:
             solution = self.solutions[self.target]
             raise SolutionFoundError((self.target, solution[0]))
+
+        # no need to search finished depth
         if digits <= self.depth_finished:
             return
-        if digits not in self.visited:
+
+        # needs digits + 1 for factorial_divide
+        while len(self.visited) <= digits + 1:
             self.visited.append([])
-            if digits in self.specials:
-                for (x, expression) in self.specials[digits]:
-                    self.insert(x, digits, expression)
+
+        # restart search for the unfinished depth
+        for x in self.visited[digits]:
+            del self.solutions[x]
+        self.visited[digits] = []
+        if digits in self.specials:
+            for (x, expression) in self.specials[digits]:
+                self.insert(x, digits, expression)
+
         self.concat(digits)
         for p, q in self.binary_generator(digits):
             self.binary_operation(p, q, digits)
