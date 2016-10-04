@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-import re, json
-from urllib import request
+import re
 from argparse import ArgumentParser
 from gmpy2 import mpq as Fraction
 from config import global_config
@@ -9,6 +8,7 @@ from quadratic import Quadratic
 from solver.integral import IntegralTchisla
 from solver.rational import RationalTchisla
 from solver.quadratic import QuadraticTchisla
+from api import tchisla as tchisla_api
 
 integral_re = re.compile("^\\d+$")
 rational_re = re.compile("^\\d+(/\\d+)?$")
@@ -35,7 +35,6 @@ def general_solver(n, target, options):
     depth = max_depth and max_depth + 1
     if options.try_wr is not False:
         record = fetchRecord(target, n)
-        record = int(record['digits_count']) if record else None
         if record:
             depth = record + int(options.try_wr)
     solution = None
@@ -130,11 +129,7 @@ def parse_targets(targets):
     return target_list
 
 def fetchRecord(target, digit):
-    url = 'http://www.euclidea.xyz/api/v1/game/numbers/solutions/records?query=[{},{}]'.format(target, digit)
-    r = request.urlopen(url)
-    content = json.loads(r.read().decode('utf-8'))
-    records = content['records']
-    return records[0] if records else None
+    return tchisla_api.singleRecord(target, digit)
 
 
 def main():
