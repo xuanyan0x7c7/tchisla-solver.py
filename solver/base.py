@@ -13,16 +13,33 @@ class SolutionFoundError(Exception):
     def __init__(self, message):
         self.message = message
 
-class BaseTchisla:
-    __metaclass__ = ABCMeta
-    __slots__ = ("n", "target", "solutions", "max_depth", "visited", "number_printed", "specials", "limits")
+class BaseTchisla(metaclass=ABCMeta):
+    instances = {}
+    last_digit = 0
+    __slots__ = ("n", "target", "solutions", "max_depth", "visited", "number_printed", "specials", "limits", "depth_finished")
 
-    def __init__(self, n, target):
+    def __new__(cls, n):
+        class_name = cls.name()
+        if class_name not in cls.instances:
+            cls.instances[class_name] = {}
+        if n not in cls.instances[class_name]:
+            instance = super(BaseTchisla, cls).__new__(cls)
+            instance.solutions = {}
+            instance.visited = [None, []]
+            instance.depth_finished = 0
+            cls.instances[class_name][n] = instance
+        if cls.last_digit != 0 and cls.last_digit != n:
+            for x in cls.instances:
+                if cls.last_digit in cls.instances[x]:
+                    del cls.instances[x][cls.last_digit]
+        cls.last_digit = n
+
+        return cls.instances[class_name][n]
+
+    def __init__(self, n):
         self.n = n
-        self.target = self.constructor(target)
-        self.solutions = {}
+        self.target = None
         self.max_depth = None
-        self.visited = [None, []]
         self.number_printed = set()
 
         self.specials = {}
@@ -43,8 +60,9 @@ class BaseTchisla:
         if x == self.target:
             raise SolutionFoundError((x, digits))
 
+    @staticmethod
     @abstractmethod
-    def name(self):
+    def name():
         pass
 
     @abstractmethod
@@ -159,18 +177,36 @@ class BaseTchisla:
             yield from combinations_with_replacement(self.visited[digits >> 1], 2)
 
     def search(self, digits):
-        if digits not in self.visited:
+        # if already found, raise it
+        if self.target in self.solutions:
+            solution = self.solutions[self.target]
+            raise SolutionFoundError((self.target, solution[0]))
+
+        # no need to search finished depth
+        if digits <= self.depth_finished:
+            return
+
+        # needs digits + 1 for factorial_divide
+        while len(self.visited) <= digits + 1:
             self.visited.append([])
-            if digits in self.specials:
-                for (x, expression) in self.specials[digits]:
-                    self.insert(x, digits, expression)
+
+        # restart search for the unfinished depth
+        for x in self.visited[digits]:
+            del self.solutions[x]
+        self.visited[digits] = []
+        if digits in self.specials:
+            for (x, expression) in self.specials[digits]:
+                self.insert(x, digits, expression)
+
         self.concat(digits)
         for p, q in self.binary_generator(digits):
             self.binary_operation(p, q, digits)
         for p, q in self.binary_generator(digits):
             self.factorial_divide(p, q, digits)
+        self.depth_finished = digits
 
-    def solve(self, *, max_depth = None):
+    def solve(self, target, *, max_depth = None):
+        self.target = self.constructor(target)
         self.max_depth = max_depth
         for digits in count(1):
             if digits - 1 == max_depth:
@@ -180,7 +216,9 @@ class BaseTchisla:
             try:
                 self.search(digits)
             except SolutionFoundError as solution:
-                return solution.message[1]
+                if max_depth is None or solution.message[1] <= max_depth:
+                    return solution.message[1]
+                return
 
     def printer(self, n):
         digits, expression = self.solutions[n]

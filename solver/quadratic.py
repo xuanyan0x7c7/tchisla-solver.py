@@ -9,11 +9,12 @@ __all__ = ["QuadraticTchisla"]
 class QuadraticTchisla(BaseTchisla):
     constructor = Quadratic
 
-    def __init__(self, n, target):
-        super().__init__(n, target)
+    def __init__(self, n):
+        super().__init__(n)
         self.MAX_QUADRATIC_POWER = self.limits["max_quadratic_power"]
 
-    def name(self):
+    @staticmethod
+    def name():
         return "quadratic"
 
     def range_check(self, x):
