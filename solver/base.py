@@ -1,4 +1,4 @@
-import math
+import math, sys, copy
 import operator
 from itertools import count, product, combinations_with_replacement, chain
 from functools import reduce
@@ -46,7 +46,7 @@ class BaseTchisla(metaclass=ABCMeta):
         if n in specials[self.name()]:
             self.specials = specials[self.name()][n]
 
-        self.limits = limits[self.name()]["default"]
+        self.limits = copy.deepcopy(limits[self.name()]["default"])
         if n in limits[self.name()]:
             self.limits.update(limits[self.name()][n])
         self.MAX = self.limits["max"]
