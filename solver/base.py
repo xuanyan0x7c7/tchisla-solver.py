@@ -219,7 +219,7 @@ class BaseTchisla(metaclass=ABCMeta):
             if digits - 1 == max_depth:
                 return
             if global_config["verbose"]:
-                print(digits)
+                print(digits, file=sys.stderr, flush = True)
             try:
                 self.search(digits)
             except SolutionFoundError as solution:
