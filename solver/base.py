@@ -16,7 +16,7 @@ class SolutionFoundError(Exception):
 class BaseTchisla(metaclass=ABCMeta):
     instances = {}
     last_digit = 0
-    __slots__ = ("n", "target", "solutions", "max_depth", "visited", "number_printed", "specials", "limits", "depth_finished")
+    __slots__ = ("n", "target", "solutions", "max_depth", "visited", "number_printed", "specials", "limits", "depth_started", "depth_finished", "start_state")
 
     def __new__(cls, n):
         class_name = cls.name()
@@ -26,7 +26,9 @@ class BaseTchisla(metaclass=ABCMeta):
             instance = super(BaseTchisla, cls).__new__(cls)
             instance.solutions = {}
             instance.visited = [None, []]
+            instance.depth_started = 0
             instance.depth_finished = 0
+            instance.start_state = []
             cls.instances[class_name][n] = instance
         if cls.last_digit != 0 and cls.last_digit != n:
             for x in cls.instances:
@@ -191,9 +193,14 @@ class BaseTchisla(metaclass=ABCMeta):
             self.visited.append([])
 
         # restart search for the unfinished depth
+        # we need to keep results provided by factorial_divide of last depth
+        if self.depth_started < digits:
+            self.start_state = copy.deepcopy(self.visited[digits])
+            self.depth_started = digits
         for x in self.visited[digits]:
-            del self.solutions[x]
-        self.visited[digits] = []
+            if x not in self.start_state:
+                del self.solutions[x]
+        self.visited[digits] = copy.deepcopy(self.start_state)
         if digits in self.specials:
             for (x, expression) in self.specials[digits]:
                 self.insert(x, digits, expression)
