@@ -195,12 +195,12 @@ class BaseTchisla(metaclass=ABCMeta):
         # restart search for the unfinished depth
         # we need to keep results provided by factorial_divide of last depth
         if self.depth_started < digits:
-            self.start_state = copy.deepcopy(self.visited[digits])
+            self.start_state = copy.copy(self.visited[digits])
             self.depth_started = digits
         for x in self.visited[digits]:
             if x not in self.start_state:
                 del self.solutions[x]
-        self.visited[digits] = copy.deepcopy(self.start_state)
+        self.visited[digits] = copy.copy(self.start_state)
         if digits in self.specials:
             for (x, expression) in self.specials[digits]:
                 self.insert(x, digits, expression)
