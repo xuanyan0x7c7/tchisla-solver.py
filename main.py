@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-import re, json
-from urllib import request
+import re
 from argparse import ArgumentParser
 from gmpy2 import mpq as Fraction
 from config import global_config
@@ -9,6 +8,7 @@ from quadratic import Quadratic
 from solver.integral import IntegralTchisla
 from solver.rational import RationalTchisla
 from solver.quadratic import QuadraticTchisla
+from api import tchisla as tchisla_api
 
 integral_re = re.compile("^\\d+$")
 rational_re = re.compile("^\\d+(/\\d+)?$")
@@ -33,20 +33,19 @@ solvers = {
 def general_solver(n, target, options):
     max_depth = options.max_depth
     depth = max_depth and max_depth + 1
-    if options.check_wr:
+    if options.try_wr is not False:
         record = fetchRecord(target, n)
-        record = int(record['digits_count']) if record else None
         if record:
-            depth = record
+            depth = record + int(options.try_wr)
     solution = None
     for solver_key in options.solvers:
         solver = solvers[solver_key]
         if not solver["regex"].match(str(target)):
             continue
         current_target = solver["constructor"](target)
-        tchisla = solver["solver"](n, current_target)
+        tchisla = solver["solver"](n)
         max_depth = depth
-        depth = tchisla.solve(max_depth = max_depth and max_depth - 1)
+        depth = tchisla.solve(current_target, max_depth = max_depth and max_depth - 1)
         if depth is None:
             depth = max_depth
             continue
@@ -58,7 +57,7 @@ def general_solver(n, target, options):
         print(current_target, "=", tchisla.full_expression(tchisla.target), flush = True)
         if global_config["verbose"]:
             print('\007', end='', flush = True)
-    if depth and options.check_wr:
+    if depth and options.try_wr is not False:
         if not record or record > depth:
             print('New WR Found!', flush = True)
 
@@ -83,7 +82,7 @@ def parse_problems(problems):
         for target in targets:
             for digit in digits:
                 problem_list.add((target, digit))
-    problem_list = sorted(problem_list)
+    problem_list = sorted(problem_list, key=lambda x: (x[1], x[0]))
 
     return problem_list
 
@@ -130,11 +129,7 @@ def parse_targets(targets):
     return target_list
 
 def fetchRecord(target, digit):
-    url = 'http://www.euclidea.xyz/api/v1/game/numbers/solutions/records?query=[{},{}]'.format(target, digit)
-    r = request.urlopen(url)
-    content = json.loads(r.read().decode('utf-8'))
-    records = content['records']
-    return records[0] if records else None
+    return tchisla_api.singleRecord(target, digit)
 
 
 def main():
@@ -150,9 +145,18 @@ def main():
         type=int,
         help='max search depth'
     )
-    parser.add_argument('-c', '--check-wr',
-        action='store_true',
+    parser.add_argument('-w', '--try-wr',
+        action='store_const',
+        dest='try_wr',
         default=False,
+        const='1',
+        help='switch mode to try to find a solution with a length of current WR or less',
+    )
+    parser.add_argument('-c', '--check-wr',
+        action='store_const',
+        dest='try_wr',
+        default=False,
+        const='0',
         help='switch mode to try to find a solution shorter than the current WR',
     )
     parser.add_argument('-v', '--verbose',
